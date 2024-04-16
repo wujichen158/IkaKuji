@@ -1,0 +1,37 @@
+modLoader="javafml"
+loaderVersion="[36,)"
+license="All rights reserved"
+issueTrackerURL="https://github.com/Lileep/PixelmonVirtualBattleNPC/issues"
+
+[[mods]]
+modId="ikakuji"
+version="1.0.0"
+displayName="PixelmonVirtualBattleNPC"
+displayURL="https://github.com/Lileep/PixelmonVirtualBattleNPC"
+logoFile="icon.png"
+credits="Thanks for developers"
+authors="Lileep"
+description='''
+Pixelmon Virtual Battle NPC mod
+'''
+
+[[dependencies.ikakuji]]
+    modId="forge"
+    mandatory=true
+    versionRange="[36,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.ikakuji]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.16.5,1.17)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.ikakuji]]
+    modId="pixelmon"
+    mandatory=true
+    versionRange="[9.1.10,)"
+    ordering="NONE"
+    side="BOTH"
