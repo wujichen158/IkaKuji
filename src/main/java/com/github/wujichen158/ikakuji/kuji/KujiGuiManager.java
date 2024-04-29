@@ -1,6 +1,5 @@
 package com.github.wujichen158.ikakuji.kuji;
 
-import com.envyful.api.config.type.ConfigItem;
 import com.envyful.api.config.type.ExtendedConfigItem;
 import com.envyful.api.forge.chat.UtilChatColour;
 import com.envyful.api.forge.config.UtilConfigInterface;
@@ -11,7 +10,9 @@ import com.envyful.api.forge.player.ForgeEnvyPlayer;
 import com.envyful.api.gui.factory.GuiFactory;
 import com.envyful.api.gui.pane.Pane;
 import com.github.wujichen158.ikakuji.IkaKuji;
-import com.github.wujichen158.ikakuji.config.IkaKujiObj;
+import com.github.wujichen158.ikakuji.config.KujiObj;
+import com.github.wujichen158.ikakuji.kuji.gui.IGuiTickHandler;
+import com.github.wujichen158.ikakuji.kuji.gui.impl.GuiTickHandlerFactory;
 import com.github.wujichen158.ikakuji.lib.Reference;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.enchantment.Enchantments;
@@ -22,14 +23,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class KujiGuiManager {
-    public static void open(IkaKujiObj.Crate crate, ForgeEnvyPlayer player, List<String> playerDrawn, List<IkaKujiObj.Reward> rewards) {
+    public static void open(KujiObj.Crate crate, ForgeEnvyPlayer player, List<String> playerDrawn, List<KujiObj.Reward> rewards) {
         AtomicInteger timer = new AtomicInteger(0);
         AtomicBoolean cleared = new AtomicBoolean(false);
-        IkaKujiObj.Reward finalReward = rewards.get(0);
+        KujiObj.Reward finalReward = rewards.get(0);
         ItemStack rewardItem = new ItemBuilder(UtilConfigItem.fromConfigItem(finalReward.getDisplayItem()))
                 .enchant(Enchantments.UNBREAKING, 1)
                 .itemFlag(ItemFlag.HIDE_ENCHANTS)
                 .build();
+
+        IGuiTickHandler tickHandler = GuiTickHandlerFactory.getFromElem(crate.getGuiChangePattern());
+
         Pane pane = GuiFactory.paneBuilder()
                 .height(crate.getDisplayGuiSettings().getHeight())
                 .width(9)
@@ -39,60 +43,14 @@ public class KujiGuiManager {
                         .async()
                         .initialDelay(60)
                         .repeatDelay(20)
-                        .handler(pane1 -> {
-                            timer.incrementAndGet();
-                            // Reward settlement
-                            if (timer.get() >= (2 * crate.getSpinDuration())) {
-
-                                if (!cleared.get()) {
-                                    cleared.set(true);
-                                    KujiExecutor.playSound(finalReward.getWinSound(), player.getParent());
-                                    int counter = 0;
-                                    for (ConfigItem fillerItem : crate.getDisplayGuiSettings().getFillerItems()) {
-                                        if (!fillerItem.isEnabled() || counter == crate.getFinalRewardPosition()) {
-                                            ++counter;
-                                            continue;
-                                        }
-
-                                        pane1.set(counter % 9, counter / 9, GuiFactory.displayable(UtilConfigItem.fromConfigItem(fillerItem)));
-                                        ++counter;
-                                    }
-                                }
-
-                                pane1.set(crate.getFinalRewardPosition() % 9, crate.getFinalRewardPosition() / 9,
-                                        GuiFactory.displayable(rewardItem));
-                                return;
-                            }
-
-                            // Rolling
-                            KujiExecutor.playSound(crate.getRollSound(), player.getParent());
-                            List<Integer> spinSlots = crate.getDisplaySlots();
-
-                            for (int i = spinSlots.size() - 1; i > 0; i--) {
-                                int slot = spinSlots.get(i);
-                                int lastSlot = spinSlots.get(i - 1);
-                                pane1.set(slot % 9, slot / 9, pane1.get(lastSlot % 9, lastSlot / 9));
-                            }
-
-                            int slot = spinSlots.get(0);
-
-                            int subtraction = spinSlots.indexOf(crate.getFinalRewardPosition());
-                            subtraction = subtraction == -1 ? 4 : spinSlots.size() - subtraction;
-
-                            pane1.set(slot % 9, slot / 9, GuiFactory.displayable(
-                                    timer.get() == ((2 * crate.getSpinDuration()) - subtraction) ?
-                                            rewardItem : UtilConfigItem.fromConfigItem(rewards.get(Reference.RANDOM.nextInt(rewards.size())).getDisplayItem())));
-                        })
+                        .handler(tickHandler.handle(crate, player, rewards, timer, cleared, rewardItem))
                         .build())
                 .build();
 
         UtilConfigInterface.fillBackground(pane, crate.getDisplayGuiSettings());
 
         // Display init kuji gui
-        for (Integer spinSlot : crate.getDisplaySlots()) {
-            pane.set(spinSlot % 9, spinSlot / 9, GuiFactory.displayable(
-                    UtilConfigItem.fromConfigItem(rewards.get(Reference.RANDOM.nextInt(rewards.size())).getDisplayItem())));
-        }
+        tickHandler.initDisplaySlots(pane, crate, rewards);
 
         GuiFactory.guiBuilder()
                 .addPane(pane)
@@ -103,14 +61,14 @@ public class KujiGuiManager {
                         .async()
                         .handler(envyPlayer -> {
                             finalReward.give(player);
-                            KujiExecutor.rewardPostProcess(player, playerDrawn, crate);
+                            KujiExecutor.rewardPostProcess(player, finalReward, playerDrawn, crate);
                         })
                         .build())
                 .build()
                 .open(IkaKuji.getInstance().getPlayerManager().getPlayer(player.getParent()));
     }
 
-    public static void preview(IkaKujiObj.Crate crate, ForgeEnvyPlayer player, List<Pair<ExtendedConfigItem, Integer>> availableRewardItems, int page) {
+    public static void preview(KujiObj.Crate crate, ForgeEnvyPlayer player, List<Pair<ExtendedConfigItem, Integer>> availableRewardItems, int page) {
         Pane pane = GuiFactory.paneBuilder()
                 .height(crate.getPreviewGuiSettings().getHeight())
                 .width(9)

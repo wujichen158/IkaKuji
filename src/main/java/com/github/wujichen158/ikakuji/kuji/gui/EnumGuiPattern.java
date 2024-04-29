@@ -1,4 +1,4 @@
-package com.github.wujichen158.ikakuji.kuji;
+package com.github.wujichen158.ikakuji.kuji.gui;
 
 public enum EnumGuiPattern {
     standard,

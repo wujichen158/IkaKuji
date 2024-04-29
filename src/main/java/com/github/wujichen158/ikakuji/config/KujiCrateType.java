@@ -2,7 +2,7 @@ package com.github.wujichen158.ikakuji.config;
 
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
-public class CrateTypeObj {
+public class KujiCrateType {
     @ConfigSerializable
     public static class PositionCrate {
         String world;

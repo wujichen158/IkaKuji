@@ -10,9 +10,14 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 public class IkaKujiLocaleCfg extends AbstractYamlConfig {
 
     private Messages messages = new Messages();
+    private Logs logs = new Logs();
 
     public Messages getMessages() {
         return messages;
+    }
+
+    public Logs getLogs() {
+        return logs;
     }
 
     @ConfigSerializable
@@ -61,6 +66,25 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
 
         public String getRewardRemainCount() {
             return this.rewardRemainCount;
+        }
+    }
+
+    @ConfigSerializable
+    public static class Logs {
+        private Boolean enable = true;
+        private String winRewardLog = "%player% win %reward_id% (i.e. %reward_name%) in crate %crate%";
+        private String lastShotLog = " (with last shot)";
+
+        public Boolean getEnable() {
+            return enable;
+        }
+
+        public String getWinRewardLog() {
+            return winRewardLog;
+        }
+
+        public String getLastShotLog() {
+            return lastShotLog;
         }
     }
 }

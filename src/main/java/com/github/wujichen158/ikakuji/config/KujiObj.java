@@ -7,13 +7,14 @@ import com.envyful.api.forge.player.ForgeEnvyPlayer;
 import com.envyful.api.forge.server.UtilForgeServer;
 import com.github.wujichen158.ikakuji.kuji.EnumCrateType;
 import com.github.wujichen158.ikakuji.kuji.gui.EnumGuiPattern;
+import com.github.wujichen158.ikakuji.lib.Placeholders;
 import com.google.common.collect.Lists;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class IkaKujiObj {
+public class KujiObj {
     @ConfigSerializable
     public static class Crate {
         private String displayName;
@@ -38,6 +39,8 @@ public class IkaKujiObj {
         private Integer spinDuration = 5;
         private Integer finalRewardPosition = 22;
         private ConfigSound rollSound;
+
+        private ExtendedConfigItem coverItem;
 
         private Integer oneDrawLimit = 0;
         private Reward lastShot;
@@ -74,7 +77,7 @@ public class IkaKujiObj {
         public Map<String, Integer> getRewardAmountMapLazy() {
             if (Optional.ofNullable(rewardAmountMap).isEmpty()) {
                 rewardAmountMap = rewards.stream()
-                        .collect(Collectors.toMap(IkaKujiObj.Reward::getId, IkaKujiObj.Reward::getAmountPerKuji));
+                        .collect(Collectors.toMap(KujiObj.Reward::getId, KujiObj.Reward::getAmountPerKuji));
             }
             return rewardAmountMap;
         }
@@ -135,6 +138,10 @@ public class IkaKujiObj {
 
         public ConfigSound getRollSound() {
             return rollSound;
+        }
+
+        public ExtendedConfigItem getCoverItem() {
+            return coverItem;
         }
 
         public Integer getOneDrawLimit() {
@@ -205,7 +212,7 @@ public class IkaKujiObj {
 
         public void give(ForgeEnvyPlayer player) {
             for (String command : this.commands) {
-                UtilForgeServer.executeCommand(command.replace("%player%", player.getName()));
+                UtilForgeServer.executeCommand(command.replace(Placeholders.PLAYER_NAME, player.getName()));
             }
         }
 

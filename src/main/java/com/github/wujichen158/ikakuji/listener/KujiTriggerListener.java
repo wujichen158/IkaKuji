@@ -1,6 +1,6 @@
 package com.github.wujichen158.ikakuji.listener;
 
-import com.github.wujichen158.ikakuji.config.IkaKujiObj;
+import com.github.wujichen158.ikakuji.config.KujiObj;
 import com.github.wujichen158.ikakuji.kuji.KujiExecutor;
 import com.github.wujichen158.ikakuji.util.CrateFactory;
 import net.minecraft.util.ActionResultType;
@@ -31,7 +31,7 @@ public class KujiTriggerListener {
         this.handleItemInteract(event);
         if (!event.isCanceled()) {
             BlockPos blockPos = event.getHitVec().getBlockPos();
-            IkaKujiObj.Crate crate = CrateFactory.tryGetWorldPosCrate(event.getPlayer().level,
+            KujiObj.Crate crate = CrateFactory.tryGetWorldPosCrate(event.getPlayer().level,
                     blockPos.getX(),
                     blockPos.getY(),
                     blockPos.getZ());
@@ -50,7 +50,7 @@ public class KujiTriggerListener {
     public void onPlayerRightClickEntity(PlayerInteractEvent.EntityInteractSpecific event) {
         this.handleItemInteract(event);
         if (!event.isCanceled()) {
-            IkaKujiObj.Crate crate = CrateFactory.tryGetEntityCrate(event.getTarget().getName().getString());
+            KujiObj.Crate crate = CrateFactory.tryGetEntityCrate(event.getTarget().getName().getString());
             if (Optional.ofNullable(crate).isEmpty()) {
                 return;
             }
@@ -69,7 +69,7 @@ public class KujiTriggerListener {
             return;
         }
 
-        IkaKujiObj.Crate crate = CrateFactory.tryGetItemCrate(resourceName.toString());
+        KujiObj.Crate crate = CrateFactory.tryGetItemCrate(resourceName.toString());
         if (Optional.ofNullable(crate).isEmpty()) {
             return;
         }

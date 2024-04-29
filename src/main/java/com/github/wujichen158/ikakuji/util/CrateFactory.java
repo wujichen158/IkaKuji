@@ -2,8 +2,8 @@ package com.github.wujichen158.ikakuji.util;
 
 import com.envyful.api.forge.world.UtilWorld;
 import com.github.wujichen158.ikakuji.IkaKuji;
-import com.github.wujichen158.ikakuji.config.CrateTypeObj;
-import com.github.wujichen158.ikakuji.config.IkaKujiObj;
+import com.github.wujichen158.ikakuji.config.KujiCrateType;
+import com.github.wujichen158.ikakuji.config.KujiObj;
 import com.google.common.collect.Maps;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Triple;
@@ -14,7 +14,7 @@ import java.util.*;
 
 public class CrateFactory {
 
-    private static final Map<String, IkaKujiObj.Crate> LOADED_CRATES = Maps.newHashMap();
+    private static final Map<String, KujiObj.Crate> LOADED_CRATES = Maps.newHashMap();
     private static List<String> crateNameList;
 
     private static final Map<String, String> ITEM_CRATE_MAP = Maps.newHashMap();
@@ -27,7 +27,7 @@ public class CrateFactory {
         ITEM_CRATE_MAP.put(itemName, crateName);
     }
 
-    private static void registerWorldPosCrate(CrateTypeObj.PositionCrate positionCrate, String crateName) {
+    private static void registerWorldPosCrate(KujiCrateType.PositionCrate positionCrate, String crateName) {
         //TODO: End and Nether's name are NONE
         WORLD_POS_CRATE_MAP.computeIfAbsent(positionCrate.getWorld(), k -> Maps.newHashMap()).put(
                 Triple.of(positionCrate.getX(), positionCrate.getY(), positionCrate.getZ()), crateName);
@@ -37,7 +37,7 @@ public class CrateFactory {
         ENTITY_CRATE_MAP.put(entityName, crateName);
     }
 
-    private static void registerResponseCrate(ConfigurationNode node, IkaKujiObj.Crate crate) {
+    private static void registerResponseCrate(ConfigurationNode node, KujiObj.Crate crate) {
         String crateName = crate.getDisplayName();
         switch (crate.getCrateType()) {
             case item:
@@ -57,7 +57,7 @@ public class CrateFactory {
                 break;
             case position:
                 try {
-                    Optional.ofNullable(node.node("type-data").getList(CrateTypeObj.PositionCrate.class)).ifPresent(positions ->
+                    Optional.ofNullable(node.node("type-data").getList(KujiCrateType.PositionCrate.class)).ifPresent(positions ->
                             positions.forEach(position ->
                                     CrateFactory.registerWorldPosCrate(position, crateName)));
                 } catch (SerializationException ignored) {
@@ -83,11 +83,11 @@ public class CrateFactory {
         }
     }
 
-    public static IkaKujiObj.Crate tryGetItemCrate(String itemName) {
+    public static KujiObj.Crate tryGetItemCrate(String itemName) {
         return LOADED_CRATES.getOrDefault(ITEM_CRATE_MAP.getOrDefault(itemName, null), null);
     }
 
-    public static IkaKujiObj.Crate tryGetWorldPosCrate(World world, int x, int y, int z) {
+    public static KujiObj.Crate tryGetWorldPosCrate(World world, int x, int y, int z) {
         WORLD_POS_CRATE_MAP.get(UtilWorld.getName(world));
         return Optional.ofNullable(WORLD_POS_CRATE_MAP.get(UtilWorld.getName(world)))
                 .map(map -> map.get(Triple.of(x, y, z)))
@@ -95,7 +95,7 @@ public class CrateFactory {
                 .orElse(null);
     }
 
-    public static IkaKujiObj.Crate tryGetEntityCrate(String entityName) {
+    public static KujiObj.Crate tryGetEntityCrate(String entityName) {
         return LOADED_CRATES.getOrDefault(ENTITY_CRATE_MAP.getOrDefault(entityName, null), null);
     }
 
@@ -103,16 +103,16 @@ public class CrateFactory {
         throw new UnsupportedOperationException("Static factory");
     }
 
-    public static void register(ConfigurationNode node, IkaKujiObj.Crate crate) {
+    public static void register(ConfigurationNode node, KujiObj.Crate crate) {
         LOADED_CRATES.put(crate.getDisplayName(), crate);
         registerResponseCrate(node, crate);
     }
 
-    public static IkaKujiObj.Crate get(String crateName) {
+    public static KujiObj.Crate get(String crateName) {
         return LOADED_CRATES.get(crateName.toLowerCase(Locale.ROOT));
     }
 
-    public static Map<String, IkaKujiObj.Crate> getAll() {
+    public static Map<String, KujiObj.Crate> getAll() {
         return LOADED_CRATES;
     }
 

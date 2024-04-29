@@ -2,7 +2,7 @@ package com.github.wujichen158.ikakuji.util;
 
 import com.envyful.api.concurrency.UtilConcurrency;
 import com.github.wujichen158.ikakuji.IkaKuji;
-import com.github.wujichen158.ikakuji.config.IkaKujiObj;
+import com.github.wujichen158.ikakuji.config.KujiObj;
 import com.github.wujichen158.ikakuji.lib.Reference;
 import com.google.common.collect.Maps;
 import org.spongepowered.configurate.ConfigurateException;
@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class PlayerKujiFactory {
-    private static final Map<UUID, IkaKujiObj.PlayerData> LOADED_PLAYER_KUJI = Maps.newHashMap();
+    private static final Map<UUID, KujiObj.PlayerData> LOADED_PLAYER_KUJI = Maps.newHashMap();
 
     private PlayerKujiFactory() {
         throw new UnsupportedOperationException("Static factory");
@@ -30,14 +30,14 @@ public class PlayerKujiFactory {
                 LOADED_PLAYER_KUJI.put(playerUuid, playerData));
     }
 
-    public static void updateIfPresent(UUID playerUuid, IkaKujiObj.PlayerData playerData, YamlConfigurationLoader loader, ConfigurationNode node) throws ConfigurateException {
+    public static void updateIfPresent(UUID playerUuid, KujiObj.PlayerData playerData, YamlConfigurationLoader loader, ConfigurationNode node) throws ConfigurateException {
         if (LOADED_PLAYER_KUJI.containsKey(playerUuid)) {
             LOADED_PLAYER_KUJI.put(playerUuid, playerData);
             updatePlayerDataFileWithNode(playerData, loader, node);
         }
     }
 
-    public static IkaKujiObj.PlayerData get(UUID playerUuid) {
+    public static KujiObj.PlayerData get(UUID playerUuid) {
         return LOADED_PLAYER_KUJI.get(playerUuid);
     }
 
@@ -52,7 +52,7 @@ public class PlayerKujiFactory {
         return LOADED_PLAYER_KUJI.containsKey(playerUuid);
     }
 
-    public static Map<UUID, IkaKujiObj.PlayerData> getAll() {
+    public static Map<UUID, KujiObj.PlayerData> getAll() {
         return LOADED_PLAYER_KUJI;
     }
 
@@ -69,7 +69,7 @@ public class PlayerKujiFactory {
      * don't use async operation here
      *
      */
-    private static IkaKujiObj.PlayerData getOrCreatePlayerDataFile(UUID playerUuid) {
+    private static KujiObj.PlayerData getOrCreatePlayerDataFile(UUID playerUuid) {
         String playerFileName = playerUuid + Reference.YAML_SUFFIX;
         Path playerFile = Paths.get(Reference.DATA_PATH).resolve(playerFileName);
         YamlConfigurationLoader loader = YamlConfigurationLoader.builder()
@@ -82,10 +82,10 @@ public class PlayerKujiFactory {
                 rootNode = loader.load();
 
                 // Return cache
-                return rootNode.get(IkaKujiObj.PlayerData.class);
+                return rootNode.get(KujiObj.PlayerData.class);
             } else {
                 rootNode = loader.createNode();
-                IkaKujiObj.PlayerData newPlayerData = new IkaKujiObj.PlayerData(Maps.newHashMap());
+                KujiObj.PlayerData newPlayerData = new KujiObj.PlayerData(Maps.newHashMap());
 
                 // Write to file
                 updatePlayerDataFileWithNode(newPlayerData, loader, rootNode);
@@ -99,7 +99,7 @@ public class PlayerKujiFactory {
         return null;
     }
 
-    private static void updatePlayerDataFile(UUID playerUuid, IkaKujiObj.PlayerData playerData) {
+    private static void updatePlayerDataFile(UUID playerUuid, KujiObj.PlayerData playerData) {
         UtilConcurrency.runAsync(() -> {
             String playerFileName = playerUuid + Reference.YAML_SUFFIX;
             Path playerFile = Paths.get(Reference.DATA_PATH).resolve(playerFileName);
@@ -122,8 +122,8 @@ public class PlayerKujiFactory {
         });
     }
 
-    private static void updatePlayerDataFileWithNode(IkaKujiObj.PlayerData playerData, YamlConfigurationLoader loader, ConfigurationNode node) throws ConfigurateException {
-        node.set(IkaKujiObj.PlayerData.class, playerData);
+    private static void updatePlayerDataFileWithNode(KujiObj.PlayerData playerData, YamlConfigurationLoader loader, ConfigurationNode node) throws ConfigurateException {
+        node.set(KujiObj.PlayerData.class, playerData);
         loader.save(node);
     }
 }

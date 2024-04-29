@@ -1,10 +1,9 @@
 package com.github.wujichen158.ikakuji.util;
 
 import com.github.wujichen158.ikakuji.IkaKuji;
-import com.github.wujichen158.ikakuji.config.IkaKujiObj;
+import com.github.wujichen158.ikakuji.config.KujiObj;
 import com.github.wujichen158.ikakuji.kuji.KujiExecutor;
 import com.github.wujichen158.ikakuji.lib.Reference;
-import com.google.common.collect.Lists;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
@@ -14,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CfgPostProcessUtil {
@@ -33,7 +31,7 @@ public class CfgPostProcessUtil {
                                 .build();
                         try {
                             ConfigurationNode node = loader.load();
-                            Optional.ofNullable(node.get(IkaKujiObj.Crate.class)).ifPresent(crate -> {
+                            Optional.ofNullable(node.get(KujiObj.Crate.class)).ifPresent(crate -> {
                                 CrateFactory.register(node, crate);
                             });
                         } catch (ConfigurateException ignored) {
@@ -60,11 +58,11 @@ public class CfgPostProcessUtil {
                                 .build();
                         try {
                             ConfigurationNode node = loader.load();
-                            IkaKujiObj.PlayerData playerData = node.get(IkaKujiObj.PlayerData.class);
+                            KujiObj.PlayerData playerData = node.get(KujiObj.PlayerData.class);
                             if (Optional.ofNullable(playerData).isPresent()) {
                                 // refresh current caches if there're crate file updates
                                 for (String crateName : playerData.getKujiData().keySet()) {
-                                    IkaKujiObj.Crate crate = CrateFactory.get(crateName);
+                                    KujiObj.Crate crate = CrateFactory.get(crateName);
                                     if (Optional.ofNullable(crate).isPresent()) {
                                         playerData.getKujiData().computeIfPresent(crateName, (key, oldList) -> KujiExecutor.calIntersect(oldList, crate));
                                     }
