@@ -9,6 +9,7 @@ import com.envyful.api.command.annotate.permission.Permissible;
 import com.envyful.api.forge.command.completion.player.PlayerTabCompleter;
 import com.envyful.api.forge.config.UtilConfigItem;
 import com.github.wujichen158.ikakuji.command.completion.CrateDeliverCompleter;
+import com.github.wujichen158.ikakuji.command.completion.CrateNameCompleter;
 import com.github.wujichen158.ikakuji.kuji.EnumCrateType;
 import com.github.wujichen158.ikakuji.lib.PermissionNodes;
 import com.github.wujichen158.ikakuji.util.CrateFactory;
@@ -30,7 +31,10 @@ import java.util.Optional;
 public class GiveCmd {
 
     @CommandProcessor
-    public void run(@Sender ICommandSource sender, @Argument String type, @Completable(PlayerTabCompleter.class) @Argument ServerPlayerEntity targetPlayer, @Completable(CrateDeliverCompleter.class) @Argument String crateName) {
+    public void run(@Sender ICommandSource sender,
+                    @Completable(CrateDeliverCompleter.class) @Argument String type,
+                    @Completable(PlayerTabCompleter.class) @Argument ServerPlayerEntity targetPlayer,
+                    @Completable(CrateNameCompleter.class) @Argument String crateName) {
         Optional.ofNullable(CrateFactory.get(crateName)).ifPresent(crate -> {
             List<ItemStack> itemStacks = Lists.newArrayList();
             if (CrateDeliverCompleter.KEY.equals(type)) {

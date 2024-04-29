@@ -20,5 +20,6 @@ import net.minecraft.command.ICommandSource;
 public class IkaKujiCmd {
     @CommandProcessor
     public void run(@Sender ICommandSource sender) {
+        //TODO: Cmd helper
     }
 }

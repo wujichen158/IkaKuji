@@ -139,7 +139,7 @@ public class KujiExecutor {
             // Give last shot if present
             Optional.ofNullable(crate.getLastShot()).ifPresent(lastShot -> lastShot.give(player));
 
-            if (!crate.getOnce()) {
+            if (!crate.getOneRound()) {
                 playerDrawn.clear();
             }
         }

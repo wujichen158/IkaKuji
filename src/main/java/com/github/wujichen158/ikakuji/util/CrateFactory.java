@@ -10,14 +10,12 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class CrateFactory {
 
     private static final Map<String, IkaKujiObj.Crate> LOADED_CRATES = Maps.newHashMap();
-
+    private static List<String> crateNameList;
 
     private static final Map<String, String> ITEM_CRATE_MAP = Maps.newHashMap();
     private static final Map<String, Map<Triple<Integer, Integer, Integer>, String>> WORLD_POS_CRATE_MAP = Maps.newHashMap();
@@ -110,18 +108,18 @@ public class CrateFactory {
         registerResponseCrate(node, crate);
     }
 
-    public static void clear() {
-        LOADED_CRATES.clear();
-        ITEM_CRATE_MAP.clear();
-        WORLD_POS_CRATE_MAP.clear();
-        ENTITY_CRATE_MAP.clear();
-    }
-
     public static IkaKujiObj.Crate get(String crateName) {
         return LOADED_CRATES.get(crateName.toLowerCase(Locale.ROOT));
     }
 
     public static Map<String, IkaKujiObj.Crate> getAll() {
         return LOADED_CRATES;
+    }
+
+    public static void updateAllRegisteredNames() {
+        crateNameList = new ArrayList<>(LOADED_CRATES.keySet());
+    }
+    public static List<String> getAllRegisteredNames() {
+        return crateNameList;
     }
 }

@@ -5,7 +5,6 @@ import com.envyful.api.config.type.ExtendedConfigItem;
 import com.envyful.api.forge.config.ConfigSound;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
 import com.envyful.api.forge.server.UtilForgeServer;
-import com.github.wujichen158.ikakuji.IkaKuji;
 import com.github.wujichen158.ikakuji.kuji.EnumCrateType;
 import com.google.common.collect.Lists;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
@@ -40,7 +39,7 @@ public class IkaKujiObj {
 
         private Integer oneDrawLimit = 0;
         private Reward lastShot;
-        private Boolean once = true;
+        private Boolean oneRound = true;
         private double chance = 100d;
         private Reward consolationReward;
         private List<String> preCrates;
@@ -87,7 +86,7 @@ public class IkaKujiObj {
 
         // This reward map will be refreshed (i.e., set to null) after the Reward obj is updated
         public Map<String, Integer> getRewardAmountMapLazy() {
-            if (rewardAmountMap == null) {
+            if (Optional.ofNullable(rewardAmountMap).isEmpty()) {
                 rewardAmountMap = rewards.stream()
                         .collect(Collectors.toMap(IkaKujiObj.Reward::getId, IkaKujiObj.Reward::getAmountPerKuji));
             }
@@ -95,7 +94,7 @@ public class IkaKujiObj {
         }
 
         public List<String> getRewardNamesLazy() {
-            if (rewardNames == null) {
+            if (Optional.ofNullable(rewardNames).isEmpty()) {
                 rewardNames = rewards.stream()
                         .flatMap(reward -> Collections.nCopies(reward.getAmountPerKuji(), reward.getId()).stream())
                         .collect(Collectors.toList());
@@ -211,12 +210,12 @@ public class IkaKujiObj {
             this.lastShot = lastShot;
         }
 
-        public Boolean getOnce() {
-            return once;
+        public Boolean getOneRound() {
+            return oneRound;
         }
 
-        public void setOnce(Boolean once) {
-            this.once = once;
+        public void setOneRound(Boolean oneRound) {
+            this.oneRound = oneRound;
         }
 
         public double getChance() {

@@ -21,7 +21,7 @@ public class CfgPostProcessUtil {
 
     /**
      * Load all crates from data dir
-     * All related maps/sets are in lower-case
+     * Then update all registered names for cmd completion
      */
     public static void loadAllCrates() {
         try (Stream<Path> paths = Files.walk(Paths.get(Reference.CRATE_PATH))) {
@@ -40,6 +40,8 @@ public class CfgPostProcessUtil {
                             IkaKuji.LOGGER.warn("Crate " + path + " has something wrong, please have a check");
                         }
                     });
+            // Update all registered names for cmd completion
+            CrateFactory.updateAllRegisteredNames();
         } catch (IOException ignored) {
             IkaKuji.LOGGER.warn("Reading dir: " + Reference.CRATE_PATH + " failed, please have a check");
         }
