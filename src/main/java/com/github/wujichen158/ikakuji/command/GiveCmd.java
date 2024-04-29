@@ -8,11 +8,14 @@ import com.envyful.api.command.annotate.executor.Sender;
 import com.envyful.api.command.annotate.permission.Permissible;
 import com.envyful.api.forge.command.completion.player.PlayerTabCompleter;
 import com.envyful.api.forge.config.UtilConfigItem;
+import com.github.wujichen158.ikakuji.IkaKuji;
 import com.github.wujichen158.ikakuji.command.completion.CrateDeliverCompleter;
 import com.github.wujichen158.ikakuji.command.completion.CrateNameCompleter;
+import com.github.wujichen158.ikakuji.config.IkaKujiLocaleCfg;
 import com.github.wujichen158.ikakuji.kuji.EnumCrateType;
 import com.github.wujichen158.ikakuji.lib.PermissionNodes;
 import com.github.wujichen158.ikakuji.util.CrateFactory;
+import com.github.wujichen158.ikakuji.util.MsgUtil;
 import com.google.common.collect.Lists;
 import net.minecraft.command.ICommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -37,14 +40,17 @@ public class GiveCmd {
                     @Completable(CrateNameCompleter.class) @Argument String crateName) {
         Optional.ofNullable(CrateFactory.get(crateName)).ifPresent(crate -> {
             List<ItemStack> itemStacks = Lists.newArrayList();
+            IkaKujiLocaleCfg.Messages messages = IkaKuji.getInstance().getLocale().getMessages();
             if (CrateDeliverCompleter.KEY.equals(type)) {
                 itemStacks.add(UtilConfigItem.fromConfigItem(crate.getKey()));
+                sender.sendMessage(MsgUtil.prefixedColorMsg(messages.getGiveKeyMsg(), crateName, targetPlayer.getName()), targetPlayer.getUUID());
             } else if (CrateDeliverCompleter.CRATE.equals(type)) {
                 if (crate.getCrateType().equals(EnumCrateType.item) && CrateFactory.getAll().containsKey(crateName)) {
                     for (Map<String, String> typeDatum : crate.getTypeData()) {
                         String itemName = typeDatum.get(type);
                         if (Optional.ofNullable(itemName).isPresent()) {
                             itemStacks.add(new ItemStack(ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(itemName))));
+                            sender.sendMessage(MsgUtil.prefixedColorMsg(messages.getGiveCrateMsg(), crateName, targetPlayer.getName()), targetPlayer.getUUID());
                         }
                     }
                 }

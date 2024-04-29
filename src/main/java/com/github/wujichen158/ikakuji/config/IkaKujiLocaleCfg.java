@@ -19,10 +19,11 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
     public static class Messages {
         private String prefix = "&e&l[&6&lIka Kuji&e&l]";
         private String configReloaded = "&fSuccessfully reloaded!";
-        private String giveKeyMsg = "&f";
+        private String giveKeyMsg = "&fYou give the key of crate %s to %s";
+        private String giveCrateMsg = "&fYou give a crate %s to %s";
         private String needKeyMsg = "&fYou need a %s to join this kuji!";
-        private String oneRoundMsg = "%fThis crate can only be opened for one round!";
-        private String noAvailableRwdMsg = "%fThis crate has no available rewards!";
+        private String oneRoundMsg = "&fThis crate can only be opened for one round!";
+        private String noAvailableRwdMsg = "&fThis crate has no available rewards!";
         private String rewardRemainCount = "&f%d remaining";
 
         public String getPrefix() {
@@ -35,6 +36,10 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
 
         public String getGiveKeyMsg() {
             return giveKeyMsg;
+        }
+
+        public String getGiveCrateMsg() {
+            return giveCrateMsg;
         }
 
         public String getNeedKeyMsg() {
