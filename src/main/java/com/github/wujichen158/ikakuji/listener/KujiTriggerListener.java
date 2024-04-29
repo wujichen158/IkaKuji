@@ -3,6 +3,7 @@ package com.github.wujichen158.ikakuji.listener;
 import com.envyful.api.config.type.ExtendedConfigItem;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
 import com.github.wujichen158.ikakuji.IkaKuji;
+import com.github.wujichen158.ikakuji.config.IkaKujiLocaleCfg;
 import com.github.wujichen158.ikakuji.config.IkaKujiObj;
 import com.github.wujichen158.ikakuji.kuji.KujiExecutor;
 import com.github.wujichen158.ikakuji.lib.Reference;
@@ -115,23 +116,24 @@ public class KujiTriggerListener {
         }
 
         //Open
+        IkaKujiLocaleCfg.Messages messages = IkaKuji.getInstance().getLocale().getMessages();
+
         //Check key first
         if (!checkKeyIfHas(crate.getKey(), player)) {
-            //TODO: Log
+            player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNeedKeyMsg(), crate.getKey().getName()), player.getUUID());
             return;
         }
 
         // Check full
-        if (KujiExecutor.isFullDrawn(playerDrawn, crate) && crate.getOnce()) {
-            //TODO: Log
+        if (KujiExecutor.isFullDrawn(playerDrawn, crate) && crate.getOneRound()) {
+            player.sendMessage(MsgUtil.prefixedColorMsg(messages.getOneRoundMsg()), player.getUUID());
             return;
         }
 
         // Generate rewards
         List<IkaKujiObj.Reward> rewards = generateRandomRewards(playerDrawn, crate);
         if (rewards.isEmpty()) {
-            //TODO: Log
-            IkaKuji.LOGGER.info("Available reward is empty!");
+            player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNoAvailableRwdMsg()), player.getUUID());
             return;
         }
 
@@ -158,7 +160,6 @@ public class KujiTriggerListener {
                     return true;
                 }
             }
-            player.sendMessage(MsgUtil.prefixedColorMsg(IkaKuji.getInstance().getLocale().getMessages().getNeedKeyMsg(), crateKeyName), player.getUUID());
             return false;
         }
         return true;
