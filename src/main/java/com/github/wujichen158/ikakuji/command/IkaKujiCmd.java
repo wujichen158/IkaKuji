@@ -14,6 +14,7 @@ import net.minecraft.command.ICommandSource;
         }
 )
 @SubCommands({
+        GiveCmd.class,
         ReloadCmd.class,
 })
 public class IkaKujiCmd {

@@ -10,6 +10,9 @@ import com.github.wujichen158.ikakuji.command.IkaKujiCmd;
 import com.github.wujichen158.ikakuji.config.IkaKujiCfg;
 import com.github.wujichen158.ikakuji.config.IkaKujiLocaleCfg;
 import com.github.wujichen158.ikakuji.lib.Reference;
+import com.github.wujichen158.ikakuji.listener.KujiTriggerListener;
+import com.github.wujichen158.ikakuji.listener.PlayerIOListener;
+import com.github.wujichen158.ikakuji.util.CfgPostProcessUtil;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -21,6 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Mod(Reference.MOD_ID)
 public class IkaKuji {
@@ -34,9 +40,13 @@ public class IkaKuji {
     private IkaKujiCfg config;
     private IkaKujiLocaleCfg locale;
 
+    //TODO: Asyc and batchly when saving files
+
     public IkaKuji() {
         INSTANCE = this;
 
+        MinecraftForge.EVENT_BUS.register(new KujiTriggerListener());
+        MinecraftForge.EVENT_BUS.register(new PlayerIOListener());
         MinecraftForge.EVENT_BUS.register(this);
     }
 
@@ -51,20 +61,35 @@ public class IkaKuji {
         createDirsIfNotExist();
         try {
             this.config = YamlConfigFactory.getInstance(IkaKujiCfg.class);
-
             this.locale = YamlConfigFactory.getInstance(IkaKujiLocaleCfg.class);
+
+            CfgPostProcessUtil.loadAllCrates();
+            CfgPostProcessUtil.cleanUpCurrentKuji();
+
         } catch (IOException e) {
             LOGGER.error(e.toString());
         }
     }
 
     private void createDirsIfNotExist() {
+        try {
+            Path teamPath = Paths.get(Reference.CRATE_PATH);
+            if (Files.notExists(teamPath)) {
+                Files.createDirectories(teamPath);
+            }
+
+            Path dataPath = Paths.get(Reference.DATA_PATH);
+            if (Files.notExists(dataPath)) {
+                Files.createDirectories(dataPath);
+            }
+        } catch (IOException e) {
+            LOGGER.error(e.toString());
+        }
     }
 
     @SubscribeEvent
     public void preInit(final FMLServerAboutToStartEvent event) {
         GuiFactory.setPlatformFactory(new ForgeGuiFactory());
-
         loadConfig();
     }
 

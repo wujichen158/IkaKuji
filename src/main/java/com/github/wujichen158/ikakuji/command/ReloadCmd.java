@@ -18,7 +18,6 @@ public class ReloadCmd {
 
     @CommandProcessor
     public void run(@Sender ICommandSource sender) {
-        //Whether to reload config before every cmd? No, otherwise every time player trigger battles will reload configs
         IkaKuji.getInstance().loadConfig();
         sender.sendMessage(MsgUtil.prefixedColorMsg(IkaKuji.getInstance().getLocale().getMessages().getConfigReloaded()), Util.NIL_UUID);
     }

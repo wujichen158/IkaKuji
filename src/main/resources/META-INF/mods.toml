@@ -1,18 +1,18 @@
 modLoader="javafml"
 loaderVersion="[36,)"
 license="All rights reserved"
-issueTrackerURL="https://github.com/Lileep/PixelmonVirtualBattleNPC/issues"
+issueTrackerURL="https://github.com/wujichen158/IkaKuji/issues"
 
 [[mods]]
 modId="ikakuji"
 version="1.0.0"
-displayName="PixelmonVirtualBattleNPC"
-displayURL="https://github.com/Lileep/PixelmonVirtualBattleNPC"
+displayName="IkaKuji"
+displayURL="https://github.com/wujichen158/IkaKuji"
 logoFile="icon.png"
 credits="Thanks for developers"
-authors="Lileep"
+authors="wujichen158"
 description='''
-Pixelmon Virtual Battle NPC mod
+Server-side only Kuji mod
 '''
 
 [[dependencies.ikakuji]]
@@ -26,12 +26,5 @@ Pixelmon Virtual Battle NPC mod
     modId="minecraft"
     mandatory=true
     versionRange="[1.16.5,1.17)"
-    ordering="NONE"
-    side="BOTH"
-
-[[dependencies.ikakuji]]
-    modId="pixelmon"
-    mandatory=true
-    versionRange="[9.1.10,)"
     ordering="NONE"
     side="BOTH"
