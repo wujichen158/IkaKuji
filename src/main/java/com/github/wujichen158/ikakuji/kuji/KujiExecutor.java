@@ -12,9 +12,12 @@ import com.envyful.api.forge.player.ForgeEnvyPlayer;
 import com.envyful.api.gui.factory.GuiFactory;
 import com.envyful.api.gui.pane.Pane;
 import com.github.wujichen158.ikakuji.IkaKuji;
+import com.github.wujichen158.ikakuji.config.IkaKujiLocaleCfg;
 import com.github.wujichen158.ikakuji.config.IkaKujiObj;
 import com.github.wujichen158.ikakuji.lib.Reference;
+import com.github.wujichen158.ikakuji.util.MsgUtil;
 import com.github.wujichen158.ikakuji.util.PlayerKujiFactory;
+import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
@@ -23,104 +26,19 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.StringNBT;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class KujiExecutor {
-    public static void open(IkaKujiObj.Crate crate, ForgeEnvyPlayer player, List<String> playerDrawn, List<IkaKujiObj.Reward> rewards) {
-        AtomicInteger timer = new AtomicInteger(0);
-        AtomicBoolean cleared = new AtomicBoolean(false);
-        IkaKujiObj.Reward finalReward = rewards.get(0);
-        ItemStack rewardItem = new ItemBuilder(UtilConfigItem.fromConfigItem(finalReward.getDisplayItem()))
-                .enchant(Enchantments.UNBREAKING, 1)
-                .itemFlag(ItemFlag.HIDE_ENCHANTS)
-                .build();
-        //TODO: Test delay
-        Pane pane = GuiFactory.paneBuilder()
-                .height(crate.getDisplayGuiSettings().getHeight())
-                .width(9)
-                .topLeftX(0)
-                .topLeftY(0)
-                .tickHandler(GuiFactory.tickBuilder()
-                        .async()
-                        .initialDelay(60)
-                        .repeatDelay(20)
-                        .handler(pane1 -> {
-                            timer.incrementAndGet();
-                            // Reward settlement
-                            if (timer.get() >= (2 * crate.getSpinDuration())) {
-
-                                if (!cleared.get()) {
-                                    cleared.set(true);
-                                    playSound(finalReward.getWinSound(), player.getParent());
-                                    int counter = 0;
-                                    for (ConfigItem fillerItem : crate.getDisplayGuiSettings().getFillerItems()) {
-                                        if (!fillerItem.isEnabled() || counter == crate.getFinalRewardPosition()) {
-                                            ++counter;
-                                            continue;
-                                        }
-
-                                        pane1.set(counter % 9, counter / 9, GuiFactory.displayable(UtilConfigItem.fromConfigItem(fillerItem)));
-                                        ++counter;
-                                    }
-                                }
-
-                                pane1.set(crate.getFinalRewardPosition() % 9, crate.getFinalRewardPosition() / 9,
-                                        GuiFactory.displayable(rewardItem));
-                                return;
-                            }
-
-                            // Rolling
-                            playSound(crate.getRollSound(), player.getParent());
-                            List<Integer> spinSlots = crate.getDisplaySlots();
-
-                            for (int i = spinSlots.size() - 1; i > 0; i--) {
-                                int slot = spinSlots.get(i);
-                                int lastSlot = spinSlots.get(i - 1);
-                                pane1.set(slot % 9, slot / 9, pane1.get(lastSlot % 9, lastSlot / 9));
-                            }
-
-                            int slot = spinSlots.get(0);
-
-                            int subtraction = spinSlots.indexOf(crate.getFinalRewardPosition());
-                            subtraction = subtraction == -1 ? 4 : spinSlots.size() - subtraction;
-
-                            pane1.set(slot % 9, slot / 9, GuiFactory.displayable(
-                                    timer.get() == ((2 * crate.getSpinDuration()) - subtraction) ?
-                                            rewardItem : UtilConfigItem.fromConfigItem(rewards.get(Reference.RANDOM.nextInt(rewards.size())).getDisplayItem())));
-                        })
-                        .build())
-                .build();
-
-        UtilConfigInterface.fillBackground(pane, crate.getDisplayGuiSettings());
-
-        // Display init kuji gui
-        for (Integer spinSlot : crate.getDisplaySlots()) {
-            pane.set(spinSlot % 9, spinSlot / 9, GuiFactory.displayable(
-                    UtilConfigItem.fromConfigItem(rewards.get(Reference.RANDOM.nextInt(rewards.size())).getDisplayItem())));
-        }
-
-        GuiFactory.guiBuilder()
-                .addPane(pane)
-                .title(UtilChatColour.colour(crate.getDisplayGuiSettings().getTitle()))
-                .height(crate.getDisplayGuiSettings().getHeight())
-                .setPlayerManager(IkaKuji.getInstance().getPlayerManager())
-                .closeConsumer(GuiFactory.closeConsumerBuilder()
-                        .async()
-                        .handler(envyPlayer -> {
-                            finalReward.give(player);
-                            rewardPostProcess(player, playerDrawn, crate);
-                        })
-                        .build())
-                .build()
-                .open(IkaKuji.getInstance().getPlayerManager().getPlayer(player.getParent()));
-    }
-
-    private static void playSound(ConfigSound winSound, PlayerEntity player) {
+    public static void playSound(ConfigSound winSound, PlayerEntity player) {
         Optional.ofNullable(winSound).ifPresent(sound -> sound.playSound((ServerPlayerEntity) player));
     }
 
@@ -134,7 +52,7 @@ public class KujiExecutor {
      * @param playerDrawn
      * @param crate
      */
-    private static void rewardPostProcess(ForgeEnvyPlayer player, List<String> playerDrawn, IkaKujiObj.Crate crate) {
+    public static void rewardPostProcess(ForgeEnvyPlayer player, List<String> playerDrawn, IkaKujiObj.Crate crate) {
         if (isFullDrawn(playerDrawn, crate)) {
             // Give last shot if present
             Optional.ofNullable(crate.getLastShot()).ifPresent(lastShot -> lastShot.give(player));
@@ -187,57 +105,7 @@ public class KujiExecutor {
         return playerDrawn;
     }
 
-    public static void preview(IkaKujiObj.Crate crate, ForgeEnvyPlayer player, List<Pair<ExtendedConfigItem, Integer>> availableRewardItems, int page) {
-        Pane pane = GuiFactory.paneBuilder()
-                .height(crate.getPreviewGuiSettings().getHeight())
-                .width(9)
-                .topLeftX(0)
-                .topLeftY(0)
-                .build();
-
-        UtilConfigInterface.fillBackground(pane, crate.getPreviewGuiSettings());
-
-        int onePageCount = crate.getPreviewSlots().size();
-        int beginIndex = (page - 1) * onePageCount;
-        for (int previewSlot : crate.getPreviewSlots()) {
-            ItemStack itemStack;
-            // Remain slots will keep empty
-            if (beginIndex < availableRewardItems.size()) {
-                Pair<ExtendedConfigItem, Integer> pair = availableRewardItems.get(beginIndex);
-                itemStack = UtilConfigItem.fromConfigItem(pair.getFirst());
-                // Add a lore for amount preview
-                addRewardLore(itemStack, pair.getSecond());
-            } else {
-                itemStack = ItemStack.EMPTY;
-            }
-            pane.set(previewSlot % 9, previewSlot / 9, GuiFactory.displayable(itemStack));
-            beginIndex++;
-        }
-
-        // Next page button
-        if (onePageCount * page < availableRewardItems.size()) {
-            UtilConfigItem.builder()
-                    .clickHandler((envyPlayer, clickType) -> preview(crate, player, availableRewardItems, page + 1))
-                    .extendedConfigItem(player, pane, crate.getPreviewNextPage());
-        }
-
-        // Previous page button
-        if (page > 1) {
-            UtilConfigItem.builder()
-                    .clickHandler((envyPlayer, clickType) -> preview(crate, player, availableRewardItems, page - 1))
-                    .extendedConfigItem(player, pane, crate.getPreviewPreviousPage());
-        }
-
-        GuiFactory.guiBuilder()
-                .addPane(pane)
-                .title(UtilChatColour.colour(crate.getPreviewGuiSettings().getTitle()))
-                .height(crate.getPreviewGuiSettings().getHeight())
-                .setPlayerManager(IkaKuji.getInstance().getPlayerManager())
-                .build()
-                .open(IkaKuji.getInstance().getPlayerManager().getPlayer(player.getParent()));
-    }
-
-    private static void addRewardLore(ItemStack itemStack, int rewardCount) {
+    public static void addRewardLore(ItemStack itemStack, int rewardCount) {
         CompoundNBT display = itemStack.getOrCreateTagElement("display");
         ListNBT currentLore = display.getList("Lore", 8);
         currentLore.add(StringNBT.valueOf(""));
@@ -247,5 +115,131 @@ public class KujiExecutor {
                                 IkaKuji.getInstance().getLocale().getMessages().getRewardRemainCount(), rewardCount)))));
         display.put("Lore", currentLore);
         itemStack.addTagElement("display", display);
+    }
+
+
+    
+    public static void executeKujiLogic(PlayerInteractEvent event, IkaKujiObj.Crate crate, boolean takeItem) {
+        // Must check here, or it'll execute twice
+        if (event.getHand() != Hand.MAIN_HAND) {
+            return;
+        }
+
+        PlayerEntity player = event.getPlayer();
+        if (executeKujiLogic(player, crate)) {
+            //Consume crate
+            if (!player.isCreative() && takeItem) {
+                event.getItemStack().shrink(1);
+            }
+        }
+    }
+
+    public static boolean executeKujiLogic(PlayerEntity player, IkaKujiObj.Crate crate) {
+        ForgeEnvyPlayer envyPlayer = IkaKuji.getInstance().getPlayerManager().getPlayer((ServerPlayerEntity) player);
+        if (!PlayerKujiFactory.hasPlayer(envyPlayer.getUniqueId())) {
+            return false;
+        }
+
+        List<String> playerDrawn = PlayerKujiFactory.get(envyPlayer.getUniqueId())
+                .getKujiData().getOrDefault(crate.getDisplayName(), Lists.newArrayList());
+
+        //Preview
+        if (player.isShiftKeyDown()) {
+            KujiGuiManager.preview(crate, envyPlayer, calAvailableRewards(playerDrawn, crate), 1);
+            return false;
+        }
+
+        //Open
+        IkaKujiLocaleCfg.Messages messages = IkaKuji.getInstance().getLocale().getMessages();
+
+        // Check full
+        if (KujiExecutor.isFullDrawn(playerDrawn, crate) && crate.getOneRound()) {
+            player.sendMessage(MsgUtil.prefixedColorMsg(messages.getOneRoundMsg()), player.getUUID());
+            return false;
+        }
+
+        // Generate rewards
+        List<IkaKujiObj.Reward> rewards = generateRandomRewards(playerDrawn, crate);
+        if (rewards.isEmpty()) {
+            player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNoAvailableRwdMsg()), player.getUUID());
+            return false;
+        }
+
+        //Take item options must execute last
+        //Check and take key
+        if (!checkKeyIfHas(crate.getKey(), player)) {
+            player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNeedKeyMsg(), crate.getKey().getName()), player.getUUID());
+            return false;
+        }
+
+        //TODO: Async?
+        KujiGuiManager.open(crate, envyPlayer, playerDrawn, rewards);
+        return true;
+    }
+
+    private static boolean checkKeyIfHas(ExtendedConfigItem crateKey, PlayerEntity player) {
+        if (Optional.ofNullable(crateKey).isPresent()) {
+            String crateKeyName = crateKey.getType();
+
+            for (ItemStack invItem : player.inventory.items) {
+                if (Optional.ofNullable(invItem.getItem().getRegistryName())
+                        .map(ResourceLocation::toString)
+                        .filter(regName -> regName.equals(crateKeyName)).isPresent()) {
+                    //Consume key
+                    if (!player.isCreative()) {
+                        invItem.shrink(crateKey.getAmount());
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private static List<IkaKujiObj.Reward> generateRandomRewards(List<String> playerDrawn, IkaKujiObj.Crate crate) {
+        Map<String, Long> drawnMap = playerDrawn.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        List<Pair<IkaKujiObj.Reward, Double>> availableRewards = Lists.newArrayList();
+        double totalWeight = 0;
+        for (IkaKujiObj.Reward reward : crate.getRewards()) {
+            int availableAmount = getAvailableAmount(reward.getAmountPerKuji(), drawnMap.get(reward.getId()));
+            double rewardWeight = (double) reward.getTotalWeight() / reward.getAmountPerKuji();
+            totalWeight += rewardWeight * availableAmount;
+            for (int i = 0; i < availableAmount; i++) {
+                availableRewards.add(new Pair<>(reward, rewardWeight));
+            }
+        }
+
+        double randomWeight = Reference.RANDOM.nextDouble() * totalWeight;
+        double cumulativeWeight = 0.0;
+        List<IkaKujiObj.Reward> rewards = Lists.newArrayList();
+        for (Pair<IkaKujiObj.Reward, Double> weightedReward : availableRewards) {
+            if (cumulativeWeight < randomWeight && cumulativeWeight + weightedReward.getSecond() >= randomWeight) {
+                IkaKujiObj.Reward reward = weightedReward.getFirst();
+                playerDrawn.add(reward.getId());
+                rewards.add(0, reward);
+            } else {
+                rewards.add(weightedReward.getFirst());
+            }
+            cumulativeWeight += weightedReward.getSecond();
+        }
+        return rewards;
+    }
+
+    private static int getAvailableAmount(int amountPerKuji, Long drawnAmount) {
+        if (Optional.ofNullable(drawnAmount).isPresent() && drawnAmount <= amountPerKuji) {
+            amountPerKuji -= drawnAmount.intValue();
+        }
+        return amountPerKuji;
+    }
+
+    private static List<Pair<ExtendedConfigItem, Integer>> calAvailableRewards(List<String> playerDrawn, IkaKujiObj.Crate crate) {
+        Map<String, Long> playerDrawnCount = playerDrawn.stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        return crate.getRewards().stream()
+                .filter(IkaKujiObj.Reward::getCanPreview)
+                .map(reward -> new Pair<>(reward.getDisplayItem(), reward.getAmountPerKuji() - playerDrawnCount.getOrDefault(reward.getId(), 0L).intValue()))
+                .filter(pair -> pair.getSecond() > 0)
+                .collect(Collectors.toList());
     }
 }
