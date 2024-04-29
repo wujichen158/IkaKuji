@@ -1,25 +1,20 @@
 package com.github.wujichen158.ikakuji.kuji;
 
-import com.envyful.api.config.type.ConfigItem;
+import com.envyful.api.concurrency.UtilConcurrency;
 import com.envyful.api.config.type.ExtendedConfigItem;
 import com.envyful.api.forge.chat.UtilChatColour;
 import com.envyful.api.forge.config.ConfigSound;
-import com.envyful.api.forge.config.UtilConfigInterface;
-import com.envyful.api.forge.config.UtilConfigItem;
-import com.envyful.api.forge.items.ItemBuilder;
-import com.envyful.api.forge.items.ItemFlag;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
-import com.envyful.api.gui.factory.GuiFactory;
-import com.envyful.api.gui.pane.Pane;
+import com.envyful.api.text.PlaceholderFactory;
 import com.github.wujichen158.ikakuji.IkaKuji;
 import com.github.wujichen158.ikakuji.config.IkaKujiLocaleCfg;
-import com.github.wujichen158.ikakuji.config.IkaKujiObj;
+import com.github.wujichen158.ikakuji.config.KujiObj;
+import com.github.wujichen158.ikakuji.lib.Placeholders;
 import com.github.wujichen158.ikakuji.lib.Reference;
 import com.github.wujichen158.ikakuji.util.MsgUtil;
 import com.github.wujichen158.ikakuji.util.PlayerKujiFactory;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -31,9 +26,13 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -52,8 +51,11 @@ public class KujiExecutor {
      * @param playerDrawn
      * @param crate
      */
-    public static void rewardPostProcess(ForgeEnvyPlayer player, List<String> playerDrawn, IkaKujiObj.Crate crate) {
+    public static void rewardPostProcess(ForgeEnvyPlayer player, KujiObj.Reward finalReward, List<String> playerDrawn, KujiObj.Crate crate) {
+        boolean isLast = false;
         if (isFullDrawn(playerDrawn, crate)) {
+            isLast = true;
+
             // Give last shot if present
             Optional.ofNullable(crate.getLastShot()).ifPresent(lastShot -> lastShot.give(player));
 
@@ -62,6 +64,42 @@ public class KujiExecutor {
             }
         }
         PlayerKujiFactory.updatePlayerDrawn(playerDrawn, player.getUniqueId(), crate.getDisplayName());
+
+        if (IkaKuji.getInstance().getLocale().getLogs().getEnable()) {
+            logRes(player, crate, finalReward, isLast);
+        }
+    }
+
+    /**
+     * Log one draw to file
+     *
+     * @param player
+     * @param crate
+     * @param finalReward
+     * @param isLast
+     */
+    private static void logRes(ForgeEnvyPlayer player, KujiObj.Crate crate, KujiObj.Reward finalReward, boolean isLast) {
+        UtilConcurrency.runAsync(() -> {
+            IkaKujiLocaleCfg.Logs logs = IkaKuji.getInstance().getLocale().getLogs();
+            LocalDateTime now = LocalDateTime.now();
+            String logEntry = String.format("%s-%s-%s %02d:%02d:%02d: %s\n",
+                    now.getYear(), now.getMonthValue(), now.getDayOfMonth(),
+                    now.getHour(), now.getMinute(), now.getSecond(),
+                    logs.getWinRewardLog()
+                            .replace(Placeholders.PLAYER_NAME, player.getName())
+                            .replace(Placeholders.CRATE_NAME, crate.getDisplayName())
+                            .replace(Placeholders.REWARD_ID, finalReward.getId())
+                            .replace(Placeholders.REWARD_NAME, finalReward.getDisplayItem().getName())
+            );
+            if (isLast) {
+                logEntry += logs.getLastShotLog();
+            }
+            try {
+                Files.write(Paths.get(Reference.LOG_PATH), logEntry.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                IkaKuji.LOGGER.error(e.toString());
+            }
+        });
     }
 
     /**
@@ -75,7 +113,7 @@ public class KujiExecutor {
      * @param crate
      * @return
      */
-    public static boolean isFullDrawn(List<String> playerDrawn, IkaKujiObj.Crate crate) {
+    public static boolean isFullDrawn(List<String> playerDrawn, KujiObj.Crate crate) {
         Map<String, Integer> playerDrawnMap = playerDrawn.stream().collect(Collectors.toMap(key -> key, value -> 1, Integer::sum));
         Map<String, Integer> rewardMap = crate.getRewardAmountMapLazy();
         return playerDrawnMap.equals(rewardMap);
@@ -90,7 +128,7 @@ public class KujiExecutor {
      * @param crate
      * @return
      */
-    public static List<String> calIntersect(List<String> playerDrawn, IkaKujiObj.Crate crate) {
+    public static List<String> calIntersect(List<String> playerDrawn, KujiObj.Crate crate) {
         Map<String, Integer> rewardMap = new HashMap<>(crate.getRewardAmountMapLazy());
         Iterator<String> iterator = playerDrawn.iterator();
         while (iterator.hasNext()) {
@@ -118,8 +156,8 @@ public class KujiExecutor {
     }
 
 
-    
-    public static void executeKujiLogic(PlayerInteractEvent event, IkaKujiObj.Crate crate, boolean takeItem) {
+
+    public static void executeKujiLogic(PlayerInteractEvent event, KujiObj.Crate crate, boolean takeItem) {
         // Must check here, or it'll execute twice
         if (event.getHand() != Hand.MAIN_HAND) {
             return;
@@ -134,7 +172,7 @@ public class KujiExecutor {
         }
     }
 
-    public static boolean executeKujiLogic(PlayerEntity player, IkaKujiObj.Crate crate) {
+    public static boolean executeKujiLogic(PlayerEntity player, KujiObj.Crate crate) {
         ForgeEnvyPlayer envyPlayer = IkaKuji.getInstance().getPlayerManager().getPlayer((ServerPlayerEntity) player);
         if (!PlayerKujiFactory.hasPlayer(envyPlayer.getUniqueId())) {
             return false;
@@ -159,7 +197,7 @@ public class KujiExecutor {
         }
 
         // Generate rewards
-        List<IkaKujiObj.Reward> rewards = generateRandomRewards(playerDrawn, crate);
+        List<KujiObj.Reward> rewards = generateRandomRewards(playerDrawn, crate);
         if (rewards.isEmpty()) {
             player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNoAvailableRwdMsg()), player.getUUID());
             return false;
@@ -197,11 +235,11 @@ public class KujiExecutor {
         return true;
     }
 
-    private static List<IkaKujiObj.Reward> generateRandomRewards(List<String> playerDrawn, IkaKujiObj.Crate crate) {
+    private static List<KujiObj.Reward> generateRandomRewards(List<String> playerDrawn, KujiObj.Crate crate) {
         Map<String, Long> drawnMap = playerDrawn.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-        List<Pair<IkaKujiObj.Reward, Double>> availableRewards = Lists.newArrayList();
+        List<Pair<KujiObj.Reward, Double>> availableRewards = Lists.newArrayList();
         double totalWeight = 0;
-        for (IkaKujiObj.Reward reward : crate.getRewards()) {
+        for (KujiObj.Reward reward : crate.getRewards()) {
             int availableAmount = getAvailableAmount(reward.getAmountPerKuji(), drawnMap.get(reward.getId()));
             double rewardWeight = (double) reward.getTotalWeight() / reward.getAmountPerKuji();
             totalWeight += rewardWeight * availableAmount;
@@ -212,10 +250,10 @@ public class KujiExecutor {
 
         double randomWeight = Reference.RANDOM.nextDouble() * totalWeight;
         double cumulativeWeight = 0.0;
-        List<IkaKujiObj.Reward> rewards = Lists.newArrayList();
-        for (Pair<IkaKujiObj.Reward, Double> weightedReward : availableRewards) {
+        List<KujiObj.Reward> rewards = Lists.newArrayList();
+        for (Pair<KujiObj.Reward, Double> weightedReward : availableRewards) {
             if (cumulativeWeight < randomWeight && cumulativeWeight + weightedReward.getSecond() >= randomWeight) {
-                IkaKujiObj.Reward reward = weightedReward.getFirst();
+                KujiObj.Reward reward = weightedReward.getFirst();
                 playerDrawn.add(reward.getId());
                 rewards.add(0, reward);
             } else {
@@ -233,11 +271,11 @@ public class KujiExecutor {
         return amountPerKuji;
     }
 
-    private static List<Pair<ExtendedConfigItem, Integer>> calAvailableRewards(List<String> playerDrawn, IkaKujiObj.Crate crate) {
+    private static List<Pair<ExtendedConfigItem, Integer>> calAvailableRewards(List<String> playerDrawn, KujiObj.Crate crate) {
         Map<String, Long> playerDrawnCount = playerDrawn.stream()
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
         return crate.getRewards().stream()
-                .filter(IkaKujiObj.Reward::getCanPreview)
+                .filter(KujiObj.Reward::getCanPreview)
                 .map(reward -> new Pair<>(reward.getDisplayItem(), reward.getAmountPerKuji() - playerDrawnCount.getOrDefault(reward.getId(), 0L).intValue()))
                 .filter(pair -> pair.getSecond() > 0)
                 .collect(Collectors.toList());
