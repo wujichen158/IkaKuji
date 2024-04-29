@@ -6,6 +6,7 @@ import com.envyful.api.forge.config.ConfigSound;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
 import com.envyful.api.forge.server.UtilForgeServer;
 import com.github.wujichen158.ikakuji.kuji.EnumCrateType;
+import com.github.wujichen158.ikakuji.kuji.gui.EnumGuiPattern;
 import com.google.common.collect.Lists;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
@@ -31,6 +32,7 @@ public class IkaKujiObj {
         private ExtendedConfigItem previewNextPage;
         private ExtendedConfigItem previewPreviousPage;
 
+        private EnumGuiPattern guiChangePattern;
         private Integer initialDelay = 20;
         private Integer repeatDelay = 20;
         private Integer spinDuration = 5;
@@ -48,16 +50,8 @@ public class IkaKujiObj {
             return displayName;
         }
 
-        public void setDisplayName(String displayName) {
-            this.displayName = displayName;
-        }
-
         public EnumCrateType getCrateType() {
             return crateType;
-        }
-
-        public void setCrateType(EnumCrateType crateType) {
-            this.crateType = crateType;
         }
 
         public List<Map<String, String>> getTypeData() {
@@ -66,14 +60,6 @@ public class IkaKujiObj {
 
         public ExtendedConfigItem getKey() {
             return key;
-        }
-
-        public void setTypeData(List<Map<String, String>> typeData) {
-            this.typeData = typeData;
-        }
-
-        public void setKey(ExtendedConfigItem key) {
-            this.key = key;
         }
 
         public List<Reward> getRewards() {
@@ -102,144 +88,77 @@ public class IkaKujiObj {
             return rewardNames;
         }
 
-        public void setRewards(List<Reward> rewards) {
-            this.rewards = rewards;
-        }
-
         public ConfigInterface getPreviewGuiSettings() {
             return previewGuiSettings;
-        }
-
-        public void setPreviewGuiSettings(ConfigInterface previewGuiSettings) {
-            this.previewGuiSettings = previewGuiSettings;
         }
 
         public ConfigInterface getDisplayGuiSettings() {
             return displayGuiSettings;
         }
 
-        public void setDisplayGuiSettings(ConfigInterface displayGuiSettings) {
-            this.displayGuiSettings = displayGuiSettings;
-        }
-
         public List<Integer> getPreviewSlots() {
             return previewSlots;
-        }
-
-        public void setPreviewSlots(List<Integer> previewSlots) {
-            this.previewSlots = previewSlots;
         }
 
         public List<Integer> getDisplaySlots() {
             return displaySlots;
         }
 
-        public void setDisplaySlots(List<Integer> displaySlots) {
-            this.displaySlots = displaySlots;
-        }
-
         public ExtendedConfigItem getPreviewNextPage() {
             return previewNextPage;
-        }
-
-        public void setPreviewNextPage(ExtendedConfigItem previewNextPage) {
-            this.previewNextPage = previewNextPage;
         }
 
         public ExtendedConfigItem getPreviewPreviousPage() {
             return previewPreviousPage;
         }
 
-        public void setPreviewPreviousPage(ExtendedConfigItem previewPreviousPage) {
-            this.previewPreviousPage = previewPreviousPage;
-        }
-
         public Integer getFinalRewardPosition() {
             return finalRewardPosition;
         }
 
-        public void setFinalRewardPosition(Integer finalRewardPosition) {
-            this.finalRewardPosition = finalRewardPosition;
+
+        public EnumGuiPattern getGuiChangePattern() {
+            return guiChangePattern;
         }
 
         public Integer getInitialDelay() {
             return initialDelay;
         }
 
-        public void setInitialDelay(Integer initialDelay) {
-            this.initialDelay = initialDelay;
-        }
-
         public Integer getRepeatDelay() {
             return repeatDelay;
-        }
-
-        public void setRepeatDelay(Integer repeatDelay) {
-            this.repeatDelay = repeatDelay;
         }
 
         public Integer getSpinDuration() {
             return spinDuration;
         }
 
-        public void setSpinDuration(Integer spinDuration) {
-            this.spinDuration = spinDuration;
-        }
-
         public ConfigSound getRollSound() {
             return rollSound;
-        }
-
-        public void setRollSound(ConfigSound rollSound) {
-            this.rollSound = rollSound;
         }
 
         public Integer getOneDrawLimit() {
             return oneDrawLimit;
         }
 
-        public void setOneDrawLimit(Integer oneDrawLimit) {
-            this.oneDrawLimit = oneDrawLimit;
-        }
-
         public Reward getLastShot() {
             return lastShot;
-        }
-
-        public void setLastShot(Reward lastShot) {
-            this.lastShot = lastShot;
         }
 
         public Boolean getOneRound() {
             return oneRound;
         }
 
-        public void setOneRound(Boolean oneRound) {
-            this.oneRound = oneRound;
-        }
-
         public double getChance() {
             return chance;
-        }
-
-        public void setChance(double chance) {
-            this.chance = chance;
         }
 
         public Reward getConsolationReward() {
             return consolationReward;
         }
 
-        public void setConsolationReward(Reward consolationReward) {
-            this.consolationReward = consolationReward;
-        }
-
         public List<String> getPreCrates() {
             return preCrates;
-        }
-
-        public void setPreCrates(List<String> preCrates) {
-            this.preCrates = preCrates;
         }
     }
 
@@ -260,56 +179,28 @@ public class IkaKujiObj {
             return id;
         }
 
-        public void setId(String id) {
-            this.id = id;
-        }
-
         public List<String> getCommands() {
             return commands;
-        }
-
-        public void setCommands(List<String> commands) {
-            this.commands = commands;
         }
 
         public Integer getAmountPerKuji() {
             return amountPerKuji;
         }
 
-        public void setAmountPerKuji(Integer amountPerKuji) {
-            this.amountPerKuji = amountPerKuji;
-        }
-
         public ExtendedConfigItem getDisplayItem() {
             return displayItem;
-        }
-
-        public void setDisplayItem(ExtendedConfigItem displayItem) {
-            this.displayItem = displayItem;
         }
 
         public ConfigSound getWinSound() {
             return winSound;
         }
 
-        public void setWinSound(ConfigSound winSound) {
-            this.winSound = winSound;
-        }
-
         public Integer getTotalWeight() {
             return totalWeight;
         }
 
-        public void setTotalWeight(Integer totalWeight) {
-            this.totalWeight = totalWeight;
-        }
-
         public Boolean getCanPreview() {
             return canPreview;
-        }
-
-        public void setCanPreview(Boolean canPreview) {
-            this.canPreview = canPreview;
         }
 
         public void give(ForgeEnvyPlayer player) {
@@ -350,10 +241,6 @@ public class IkaKujiObj {
 
         public Map<String, List<String>> getKujiData() {
             return kujiData;
-        }
-
-        public void setKujiData(Map<String, List<String>> kujiData) {
-            this.kujiData = kujiData;
         }
     }
 }
