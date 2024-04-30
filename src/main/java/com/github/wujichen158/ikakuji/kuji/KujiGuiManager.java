@@ -13,12 +13,13 @@ import com.github.wujichen158.ikakuji.IkaKuji;
 import com.github.wujichen158.ikakuji.config.KujiObj;
 import com.github.wujichen158.ikakuji.kuji.gui.IGuiTickHandler;
 import com.github.wujichen158.ikakuji.kuji.gui.impl.GuiTickHandlerFactory;
-import com.github.wujichen158.ikakuji.lib.Reference;
+import com.github.wujichen158.ikakuji.util.PlayerKujiFactory;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.ItemStack;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -108,6 +109,19 @@ public class KujiGuiManager {
                     .clickHandler((envyPlayer, clickType) -> preview(crate, player, availableRewardItems, page - 1))
                     .extendedConfigItem(player, pane, crate.getPreviewPreviousPage());
         }
+
+        // Placeholder
+        Optional.ofNullable(crate.getPlaceholderItem()).ifPresent(placeholderItem -> {
+            int rewardDrawn = Optional.ofNullable(PlayerKujiFactory.get(player.getUniqueId()))
+                    .map(KujiObj.PlayerData::getKujiData)
+                    .map(kujiData -> kujiData.get(crate.getDisplayName()))
+                    .map(List::size)
+                    .orElse(0);
+            int rewardTotal = crate.getRewardTotalLazy();
+
+            UtilConfigItem.builder()
+                    .extendedConfigItem(player, pane, placeholderItem, KujiExecutor.genAmountPlaceholder(rewardDrawn, rewardTotal));
+        });
 
         GuiFactory.guiBuilder()
                 .addPane(pane)
