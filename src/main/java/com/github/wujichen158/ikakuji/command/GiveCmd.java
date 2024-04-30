@@ -42,8 +42,10 @@ public class GiveCmd {
             List<ItemStack> itemStacks = Lists.newArrayList();
             IkaKujiLocaleCfg.Messages messages = IkaKuji.getInstance().getLocale().getMessages();
             if (CrateDeliverCompleter.KEY.equals(type)) {
-                itemStacks.add(UtilConfigItem.fromConfigItem(crate.getKey()));
-                sender.sendMessage(MsgUtil.prefixedColorMsg(messages.getGiveKeyMsg(), crateName, targetPlayer.getName()), targetPlayer.getUUID());
+                Optional.ofNullable(crate.getKey()).ifPresent(key -> {
+                    itemStacks.add(UtilConfigItem.fromConfigItem(key));
+                    sender.sendMessage(MsgUtil.prefixedColorMsg(messages.getGiveKeyMsg(), crateName, targetPlayer.getName()), targetPlayer.getUUID());
+                });
             } else if (CrateDeliverCompleter.CRATE.equals(type)) {
                 if (crate.getCrateType().equals(EnumCrateType.item) && CrateFactory.getAll().containsKey(crateName)) {
                     for (Map<String, String> typeDatum : crate.getTypeData()) {

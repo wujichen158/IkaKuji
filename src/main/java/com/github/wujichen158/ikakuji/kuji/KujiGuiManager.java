@@ -42,8 +42,8 @@ public class KujiGuiManager {
                 .topLeftY(0)
                 .tickHandler(GuiFactory.tickBuilder()
                         .async()
-                        .initialDelay(60)
-                        .repeatDelay(20)
+                        .initialDelay((int)(crate.getInitialDelay() * 20))
+                        .repeatDelay((int)(crate.getRepeatDelay() * 20))
                         .handler(tickHandler.handle(crate, player, rewards, timer, cleared, rewardItem))
                         .build())
                 .build();
@@ -111,7 +111,7 @@ public class KujiGuiManager {
         }
 
         // Placeholder
-        Optional.ofNullable(crate.getPlaceholderItem()).ifPresent(placeholderItem -> {
+        Optional.ofNullable(crate.getPlaceholderButton()).ifPresent(placeholderItem -> {
             int rewardDrawn = Optional.ofNullable(PlayerKujiFactory.get(player.getUniqueId()))
                     .map(KujiObj.PlayerData::getKujiData)
                     .map(kujiData -> kujiData.get(crate.getDisplayName()))

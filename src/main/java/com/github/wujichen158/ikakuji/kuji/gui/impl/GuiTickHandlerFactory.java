@@ -10,11 +10,11 @@ import com.github.wujichen158.ikakuji.kuji.KujiExecutor;
 import com.github.wujichen158.ikakuji.kuji.gui.EnumGuiPattern;
 import com.github.wujichen158.ikakuji.kuji.gui.IGuiTickHandler;
 import com.github.wujichen158.ikakuji.lib.Reference;
+import com.google.common.collect.Lists;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -27,7 +27,8 @@ public class GuiTickHandlerFactory {
             return pane -> {
                 timer.incrementAndGet();
                 // Reward settlement
-                if (timer.get() >= (2 * crate.getSpinDuration())) {
+                double currentSecond = crate.getRepeatDelay() * timer.get();
+                if (currentSecond >= crate.getSpinDuration()) {
 
                     if (!cleared.get()) {
                         cleared.set(true);
@@ -63,11 +64,11 @@ public class GuiTickHandlerFactory {
 
                 int slot = spinSlots.get(0);
 
-                int subtraction = spinSlots.indexOf(crate.getFinalRewardPosition());
-                subtraction = subtraction == -1 ? 4 : spinSlots.size() - subtraction;
+                int offset = spinSlots.indexOf(crate.getFinalRewardPosition());
+                offset = offset == -1 ? 4 : spinSlots.size() - offset;
 
                 pane.set(slot % 9, slot / 9, GuiFactory.displayable(
-                        timer.get() == ((2 * crate.getSpinDuration()) - subtraction) ?
+                        currentSecond == (crate.getSpinDuration() - offset) ?
                                 rewardItem : UtilConfigItem.fromConfigItem(rewards.get(Reference.RANDOM.nextInt(rewards.size())).getDisplayItem())));
             };
         }
@@ -118,67 +119,124 @@ public class GuiTickHandlerFactory {
 
         @Override
         public void initDisplaySlots(Pane pane, KujiObj.Crate crate, List<KujiObj.Reward> rewards) {
-            ItemStack coverItem = UtilConfigItem.fromConfigItem(crate.getCoverItem());
+            ItemStack coverItem = Optional.ofNullable(crate.getCoverItem()).map(UtilConfigItem::fromConfigItem).orElse(ItemStack.EMPTY);
             for (Integer slot : crate.getDisplaySlots()) {
                 pane.set(slot % 9, slot / 9, GuiFactory.displayable(coverItem));
             }
+            Optional.ofNullable(crate.getCasinoMarkLeft()).ifPresent(casinoMarkLeft ->
+                    UtilConfigItem.builder()
+                            .extendedConfigItem(pane, UtilConfigItem.fromConfigItem(casinoMarkLeft), casinoMarkLeft));
+            Optional.ofNullable(crate.getCasinoMarkRight()).ifPresent(casinoMarkRight ->
+                    UtilConfigItem.builder()
+                            .extendedConfigItem(pane, UtilConfigItem.fromConfigItem(casinoMarkRight), casinoMarkRight));
         }
 
     }
 
     public static class CasinoHandler implements IGuiTickHandler {
+
+        private static final List<Integer> DEFAULT_COLS = Lists.newArrayList(2, 4, 6);
+
+        /**
+         * In this case:
+         * <p>
+         * displaySlots present columns
+         * </p>
+         * <p>
+         * finalRewardPosition presents the stop row
+         * </p>
+         *
+         * @param crate
+         * @param player
+         * @param rewards
+         * @param timer
+         * @param cleared
+         * @param rewardItem
+         * @return
+         */
         @Override
         public Consumer<Pane> handle(KujiObj.Crate crate, ForgeEnvyPlayer player, List<KujiObj.Reward> rewards, AtomicInteger timer, AtomicBoolean cleared, ItemStack rewardItem) {
             return pane -> {
                 timer.incrementAndGet();
+                //frequency * times
+                double currentSecond = crate.getRepeatDelay() * timer.get();
                 // Reward settlement
-                if (timer.get() >= (2 * crate.getSpinDuration())) {
+                if (currentSecond >= crate.getSpinDuration()) {
 
                     if (!cleared.get()) {
                         cleared.set(true);
                         KujiObj.Reward finalReward = rewards.get(0);
                         KujiExecutor.playSound(finalReward.getWinSound(), player.getParent());
-                        int counter = 0;
-                        for (ConfigItem fillerItem : crate.getDisplayGuiSettings().getFillerItems()) {
-                            if (!fillerItem.isEnabled() || counter == crate.getFinalRewardPosition()) {
-                                ++counter;
-                                continue;
-                            }
-
-                            pane.set(counter % 9, counter / 9, GuiFactory.displayable(UtilConfigItem.fromConfigItem(fillerItem)));
-                            ++counter;
-                        }
                     }
-
-                    pane.set(crate.getFinalRewardPosition() % 9, crate.getFinalRewardPosition() / 9,
-                            GuiFactory.displayable(rewardItem));
                     return;
                 }
 
                 // Rolling
                 KujiExecutor.playSound(crate.getRollSound(), player.getParent());
-                List<Integer> spinSlots = crate.getDisplaySlots();
+                List<Integer> spinCols = get3Cols(crate.getDisplaySlots());
+                int guiHeight = crate.getDisplayGuiSettings().getHeight() - 1;
 
-                for (int i = spinSlots.size() - 1; i > 0; i--) {
-                    int slot = spinSlots.get(i);
-                    int lastSlot = spinSlots.get(i - 1);
-                    pane.set(slot % 9, slot / 9, pane.get(lastSlot % 9, lastSlot / 9));
+                int stopRow = crate.getFinalRewardPosition();
+                if (stopRow > 5 || stopRow < 0) {
+                    stopRow = 3;
                 }
+                stopRow = Math.min(guiHeight, stopRow);
 
-                int slot = spinSlots.get(0);
+                //Gap between 2 reward cols
+                int rewardGap = 3;
 
-                int subtraction = spinSlots.indexOf(crate.getFinalRewardPosition());
-                subtraction = subtraction == -1 ? 4 : spinSlots.size() - subtraction;
+                //Offset of each reward. The second part can be deferred from rewardGap
+                int offset = stopRow + (rewardGap * 2 + 1);
 
-                pane.set(slot % 9, slot / 9, GuiFactory.displayable(
-                        timer.get() == ((2 * crate.getSpinDuration()) - subtraction) ?
-                                rewardItem : UtilConfigItem.fromConfigItem(rewards.get(Reference.RANDOM.nextInt(rewards.size())).getDisplayItem())));
+                for (int i = 0; i < spinCols.size(); i++) {
+                    int col = spinCols.get(i);
+                    if ((timer.get() + offset - (i + 1) * rewardGap) * crate.getRepeatDelay() <= crate.getSpinDuration()) {
+                        for (int j = guiHeight; j > 0; j--) {
+                            pane.set(col, j, pane.get(col, j - 1));
+                        }
+                        pane.set(col, 0, GuiFactory.displayable(
+                                (timer.get() + offset - i * rewardGap) * crate.getRepeatDelay() == crate.getSpinDuration() ?
+                                        rewardItem : UtilConfigItem.fromConfigItem(rewards.get(Reference.RANDOM.nextInt(rewards.size())).getDisplayItem())));
+
+                    }
+                }
             };
         }
 
         @Override
         public void initDisplaySlots(Pane pane, KujiObj.Crate crate, List<KujiObj.Reward> rewards) {
+            List<Integer> cols = get3Cols(crate.getDisplaySlots());
+            for (int col : cols) {
+                for (int i = 0; i < crate.getDisplayGuiSettings().getHeight(); i++) {
+                    pane.set(col, i, GuiFactory.displayable(
+                            UtilConfigItem.fromConfigItem(rewards.get(Reference.RANDOM.nextInt(rewards.size())).getDisplayItem())));
+                }
+            }
+        }
 
+        private List<Integer> get3Cols(List<Integer> displaySlots) {
+            if (checkCasinoDisplayCol(displaySlots)) {
+                return displaySlots;
+            } else {
+                return DEFAULT_COLS;
+            }
+        }
+
+        private boolean checkCasinoDisplayCol(List<Integer> displaySlots) {
+            int validColSize = 3;
+            if (displaySlots.size() != validColSize) {
+                return false;
+            }
+            Set<Integer> set = new HashSet<>(displaySlots);
+            if (set.size() != validColSize) {
+                return false;
+            }
+            for (int num : set) {
+                if (num < 0 || num > 8) {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 

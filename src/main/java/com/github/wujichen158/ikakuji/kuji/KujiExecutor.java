@@ -5,7 +5,7 @@ import com.envyful.api.config.type.ExtendedConfigItem;
 import com.envyful.api.forge.chat.UtilChatColour;
 import com.envyful.api.forge.config.ConfigSound;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
-import com.envyful.api.text.PlaceholderFactory;
+import com.envyful.api.text.Placeholder;
 import com.github.wujichen158.ikakuji.IkaKuji;
 import com.github.wujichen158.ikakuji.config.IkaKujiLocaleCfg;
 import com.github.wujichen158.ikakuji.config.KujiObj;
@@ -39,6 +39,14 @@ import java.util.stream.Collectors;
 public class KujiExecutor {
     public static void playSound(ConfigSound winSound, PlayerEntity player) {
         Optional.ofNullable(winSound).ifPresent(sound -> sound.playSound((ServerPlayerEntity) player));
+    }
+
+    public static Placeholder[] genAmountPlaceholder(int rewardDrawn, int rewardTotal) {
+        return new Placeholder[]{
+                Placeholder.simple(Placeholders.REWARD_DRAWN, String.valueOf(rewardDrawn)),
+                Placeholder.simple(Placeholders.REWARD_REMAIN, String.valueOf(rewardTotal - rewardDrawn)),
+                Placeholder.simple(Placeholders.REWARD_TOTAL, String.valueOf(rewardTotal))
+        };
     }
 
     /**
@@ -154,7 +162,6 @@ public class KujiExecutor {
         display.put("Lore", currentLore);
         itemStack.addTagElement("display", display);
     }
-
 
 
     public static void executeKujiLogic(PlayerInteractEvent event, KujiObj.Crate crate, boolean takeItem) {

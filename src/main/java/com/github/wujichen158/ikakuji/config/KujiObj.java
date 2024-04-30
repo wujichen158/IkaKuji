@@ -1,6 +1,7 @@
 package com.github.wujichen158.ikakuji.config;
 
 import com.envyful.api.config.type.ConfigInterface;
+import com.envyful.api.config.type.ConfigItem;
 import com.envyful.api.config.type.ExtendedConfigItem;
 import com.envyful.api.forge.config.ConfigSound;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
@@ -24,6 +25,7 @@ public class KujiObj {
         private List<Reward> rewards;
         private transient Map<String, Integer> rewardAmountMap;
         private transient List<String> rewardNames;
+        private transient Integer rewardTotal;
 
         private ConfigInterface previewGuiSettings;
         private ConfigInterface displayGuiSettings;
@@ -32,15 +34,21 @@ public class KujiObj {
 
         private ExtendedConfigItem previewNextPage;
         private ExtendedConfigItem previewPreviousPage;
+        private ExtendedConfigItem placeholderButton;
 
         private EnumGuiPattern guiChangePattern;
-        private Integer initialDelay = 20;
-        private Integer repeatDelay = 20;
-        private Integer spinDuration = 5;
+        /**
+         * Times are all in second
+         */
+        private Double initialDelay = 2d;
+        private Double repeatDelay = 1d;
+        private Double spinDuration = 10d;
         private Integer finalRewardPosition = 22;
         private ConfigSound rollSound;
 
         private ExtendedConfigItem coverItem;
+        private ExtendedConfigItem casinoMarkLeft;
+        private ExtendedConfigItem casinoMarkRight;
 
         private Integer oneDrawLimit = 0;
         private Reward lastShot;
@@ -91,6 +99,13 @@ public class KujiObj {
             return rewardNames;
         }
 
+        public Integer getRewardTotalLazy() {
+            if (Optional.ofNullable(rewardTotal).isEmpty()) {
+                rewardTotal = rewards.stream().mapToInt(Reward::getAmountPerKuji).sum();
+            }
+            return rewardTotal;
+        }
+
         public ConfigInterface getPreviewGuiSettings() {
             return previewGuiSettings;
         }
@@ -115,6 +130,10 @@ public class KujiObj {
             return previewPreviousPage;
         }
 
+        public ExtendedConfigItem getPlaceholderButton() {
+            return placeholderButton;
+        }
+
         public Integer getFinalRewardPosition() {
             return finalRewardPosition;
         }
@@ -124,15 +143,15 @@ public class KujiObj {
             return guiChangePattern;
         }
 
-        public Integer getInitialDelay() {
+        public Double getInitialDelay() {
             return initialDelay;
         }
 
-        public Integer getRepeatDelay() {
+        public Double getRepeatDelay() {
             return repeatDelay;
         }
 
-        public Integer getSpinDuration() {
+        public Double getSpinDuration() {
             return spinDuration;
         }
 
@@ -142,6 +161,14 @@ public class KujiObj {
 
         public ExtendedConfigItem getCoverItem() {
             return coverItem;
+        }
+
+        public ExtendedConfigItem getCasinoMarkLeft() {
+            return casinoMarkLeft;
+        }
+
+        public ExtendedConfigItem getCasinoMarkRight() {
+            return casinoMarkRight;
         }
 
         public Integer getOneDrawLimit() {
