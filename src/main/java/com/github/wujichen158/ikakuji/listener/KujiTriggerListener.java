@@ -64,12 +64,7 @@ public class KujiTriggerListener {
     }
 
     private void handleItemInteract(PlayerInteractEvent event) {
-        ResourceLocation resourceName = event.getItemStack().getItem().getRegistryName();
-        if (Optional.ofNullable(resourceName).isEmpty()) {
-            return;
-        }
-
-        KujiObj.Crate crate = CrateFactory.tryGetItemCrate(resourceName.toString());
+        KujiObj.Crate crate = CrateFactory.tryGetItemCrate(event.getItemStack());
         if (Optional.ofNullable(crate).isEmpty()) {
             return;
         }

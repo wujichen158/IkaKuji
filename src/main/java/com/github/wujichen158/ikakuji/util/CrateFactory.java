@@ -1,10 +1,13 @@
 package com.github.wujichen158.ikakuji.util;
 
+import com.envyful.api.config.type.ExtendedConfigItem;
+import com.envyful.api.forge.config.UtilConfigItem;
 import com.envyful.api.forge.world.UtilWorld;
 import com.github.wujichen158.ikakuji.IkaKuji;
 import com.github.wujichen158.ikakuji.config.KujiCrateType;
 import com.github.wujichen158.ikakuji.config.KujiObj;
 import com.google.common.collect.Maps;
+import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Triple;
 import org.spongepowered.configurate.ConfigurationNode;
@@ -17,14 +20,12 @@ public class CrateFactory {
     private static final Map<String, KujiObj.Crate> LOADED_CRATES = Maps.newHashMap();
     private static List<String> crateNameList;
 
-    private static final Map<String, String> ITEM_CRATE_MAP = Maps.newHashMap();
+    private static final Map<KujiCrateType.ItemWrapper, String> ITEM_CRATE_MAP = Maps.newHashMap();
     private static final Map<String, Map<Triple<Integer, Integer, Integer>, String>> WORLD_POS_CRATE_MAP = Maps.newHashMap();
     private static final Map<String, String> ENTITY_CRATE_MAP = Maps.newHashMap();
 
-    //TODO: Currently only support item name
-
-    private static void registerItemCrate(String itemName, String crateName) {
-        ITEM_CRATE_MAP.put(itemName, crateName);
+    private static void registerItemCrate(KujiCrateType.ItemWrapper itemWrapper, String crateName) {
+        ITEM_CRATE_MAP.put(itemWrapper, crateName);
     }
 
     private static void registerWorldPosCrate(KujiCrateType.PositionCrate positionCrate, String crateName) {
@@ -41,19 +42,15 @@ public class CrateFactory {
         String crateName = crate.getDisplayName();
         switch (crate.getCrateType()) {
             case item:
-                crate.getTypeData().forEach(elem -> {
-                    boolean valid = false;
-                    for (String k : elem.keySet()) {
-                        if ("type".equals(k)) {
-                            CrateFactory.registerItemCrate(elem.get(k), crateName);
-                            valid = true;
-                            break;
-                        }
-                    }
-                    if (!valid) {
-                        IkaKuji.LOGGER.warn(String.format("Item Kuji info %s has something wrong, please have a check.", crateName));
-                    }
-                });
+                try {
+                    Optional.ofNullable(node.node("type-data").getList(ExtendedConfigItem.class)).ifPresent(extendedConfigItems ->
+                            extendedConfigItems.forEach(extendedConfigItem -> {
+                                KujiCrateType.ItemWrapper itemWrapper = new KujiCrateType.ItemWrapper(UtilConfigItem.fromConfigItem(extendedConfigItem));
+                                CrateFactory.registerItemCrate(itemWrapper, crateName);
+                            }));
+                } catch (SerializationException ignored) {
+                    IkaKuji.LOGGER.warn(String.format("Item Kuji info %s has something wrong, please have a check.", crateName));
+                }
                 break;
             case position:
                 try {
@@ -83,8 +80,8 @@ public class CrateFactory {
         }
     }
 
-    public static KujiObj.Crate tryGetItemCrate(String itemName) {
-        return LOADED_CRATES.getOrDefault(ITEM_CRATE_MAP.getOrDefault(itemName, null), null);
+    public static KujiObj.Crate tryGetItemCrate(ItemStack itemStack) {
+        return LOADED_CRATES.getOrDefault(ITEM_CRATE_MAP.getOrDefault(new KujiCrateType.ItemWrapper(itemStack), null), null);
     }
 
     public static KujiObj.Crate tryGetWorldPosCrate(World world, int x, int y, int z) {
@@ -119,6 +116,7 @@ public class CrateFactory {
     public static void updateAllRegisteredNames() {
         crateNameList = new ArrayList<>(LOADED_CRATES.keySet());
     }
+
     public static List<String> getAllRegisteredNames() {
         return crateNameList;
     }
