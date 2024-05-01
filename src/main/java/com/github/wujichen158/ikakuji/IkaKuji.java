@@ -40,8 +40,6 @@ public class IkaKuji {
     private IkaKujiCfg config;
     private IkaKujiLocaleCfg locale;
 
-    //TODO: Asyc and batchly when saving files
-
     public IkaKuji() {
         INSTANCE = this;
 

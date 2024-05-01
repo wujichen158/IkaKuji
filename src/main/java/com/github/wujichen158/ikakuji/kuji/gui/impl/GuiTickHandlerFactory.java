@@ -44,7 +44,6 @@ public class GuiTickHandlerFactory {
                             pane.set(i % 9, i / 9, GuiFactory.displayable(UtilConfigItem.fromConfigItem(fillerItem)));
                             i++;
                         }
-                        //TODO: See whether this works
                         pane.set(crate.getFinalRewardPosition() % 9, crate.getFinalRewardPosition() / 9,
                                 GuiFactory.displayable(rewardItem));
                     }
