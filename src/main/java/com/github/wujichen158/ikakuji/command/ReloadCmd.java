@@ -19,6 +19,6 @@ public class ReloadCmd {
     @CommandProcessor
     public void run(@Sender ICommandSource sender) {
         IkaKuji.getInstance().loadConfig();
-        sender.sendMessage(MsgUtil.prefixedColorMsg(IkaKuji.getInstance().getLocale().getMessages().getConfigReloaded()), Util.NIL_UUID);
+        sender.sendMessage(MsgUtil.prefixedColorMsg(IkaKuji.getInstance().getLocale().getCommands().getConfigReloaded()), Util.NIL_UUID);
     }
 }

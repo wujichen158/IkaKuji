@@ -17,4 +17,16 @@ public class MsgUtil {
     public static ITextComponent prefixedColorMsg(String msg, Object... args) {
         return UtilChatColour.colour(IkaKuji.getInstance().getLocale().getMessages().getPrefix() + String.format(msg, args));
     }
+
+    /**
+     * Translate color char to real color,
+     * process the args
+     *
+     * @param msg  Message to process
+     * @param args arguments
+     * @return processed message
+     */
+    public static ITextComponent colorMsg(String msg, Object... args) {
+        return UtilChatColour.colour(String.format(msg, args));
+    }
 }

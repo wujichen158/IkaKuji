@@ -27,16 +27,16 @@ public class ListCmd {
             int onePageSize = 10;
             int page = Optional.ofNullable(arg).map(arg1 -> arg1 - 1).orElse(0);
             List<String> pagedCrateList = playerData.getAvailableCrates().subList(page, page + onePageSize);
-            IkaKujiLocaleCfg.Messages messages = IkaKuji.getInstance().getLocale().getMessages();
+            IkaKujiLocaleCfg.Commands commands = IkaKuji.getInstance().getLocale().getCommands();
 
             // style
-            player.sendMessage(MsgUtil.prefixedColorMsg(messages.getListTitle()), player.getUUID());
+            player.sendMessage(MsgUtil.colorMsg(commands.getListTitle()), player.getUUID());
             pagedCrateList.forEach(crateName ->
-                    player.sendMessage(MsgUtil.prefixedColorMsg(messages.getListElemPrefix(), crateName), player.getUUID()));
+                    player.sendMessage(MsgUtil.colorMsg(commands.getListElemPrefix(), crateName), player.getUUID()));
             for (int i = 0; i < onePageSize - pagedCrateList.size(); i++) {
                 player.sendMessage(new StringTextComponent(""), player.getUUID());
             }
-            player.sendMessage(MsgUtil.prefixedColorMsg(messages.getListFooter()), player.getUUID());
+            player.sendMessage(MsgUtil.colorMsg(commands.getListFooter()), player.getUUID());
         });
     }
 }
