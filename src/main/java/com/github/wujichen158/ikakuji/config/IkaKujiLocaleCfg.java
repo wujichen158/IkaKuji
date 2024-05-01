@@ -27,6 +27,7 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
         private String giveKeyMsg = "&fYou give the key of crate %s to %s";
         private String giveCrateMsg = "&fYou give a crate %s to %s";
         private String needKeyMsg = "&fYou need a %s to join this kuji!";
+        private String incompletePreKuji = "&fYou will also need to complete these pre-kuji: %s";
         private String oneRoundMsg = "&fThis crate can only be opened for one round!";
         private String noAvailableRwdMsg = "&fThis crate has no available rewards!";
         private String openCrateForPlayerMsg = "&fSuccessfully open crate %s for %s";
@@ -50,6 +51,10 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
 
         public String getNeedKeyMsg() {
             return needKeyMsg;
+        }
+
+        public String getIncompletePreKuji() {
+            return incompletePreKuji;
         }
 
         public String getOneRoundMsg() {

@@ -60,10 +60,7 @@ public class KujiGuiManager {
                 .setPlayerManager(IkaKuji.getInstance().getPlayerManager())
                 .closeConsumer(GuiFactory.closeConsumerBuilder()
                         .async()
-                        .handler(envyPlayer -> {
-                            finalReward.give(player);
-                            KujiExecutor.rewardPostProcess(player, finalReward, playerDrawn, crate);
-                        })
+                        .handler(envyPlayer -> KujiExecutor.rewardPostProcess(player, finalReward, playerDrawn, crate))
                         .build())
                 .build()
                 .open(IkaKuji.getInstance().getPlayerManager().getPlayer(player.getParent()));

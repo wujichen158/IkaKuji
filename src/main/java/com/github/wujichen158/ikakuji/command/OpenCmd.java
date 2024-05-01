@@ -17,6 +17,7 @@ import net.minecraft.command.ICommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Command(
         value = "open"
@@ -28,7 +29,7 @@ public class OpenCmd {
     public void run(@Sender ICommandSource sender,
                     @Completable(PlayerTabCompleter.class) @Argument ServerPlayerEntity targetPlayer,
                     @Completable(CrateNameCompleter.class) @Argument String crateName) {
-        Optional.ofNullable(CrateFactory.get(crateName)).ifPresent(crate -> KujiExecutor.executeKujiLogic(targetPlayer, crate));
+        Optional.ofNullable(CrateFactory.get(crateName)).ifPresent(crate -> KujiExecutor.executeKujiLogic(targetPlayer, crate, new AtomicInteger(1)));
         sender.sendMessage(
                 MsgUtil.prefixedColorMsg(IkaKuji.getInstance().getLocale().getMessages().getOpenCrateForPlayerMsg(), crateName, targetPlayer.getName()),
                 targetPlayer.getUUID());

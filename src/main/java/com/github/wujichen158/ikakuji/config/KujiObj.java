@@ -1,7 +1,6 @@
 package com.github.wujichen158.ikakuji.config;
 
 import com.envyful.api.config.type.ConfigInterface;
-import com.envyful.api.config.type.ConfigItem;
 import com.envyful.api.config.type.ExtendedConfigItem;
 import com.envyful.api.forge.config.ConfigSound;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
@@ -12,7 +11,10 @@ import com.github.wujichen158.ikakuji.lib.Placeholders;
 import com.google.common.collect.Lists;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class KujiObj {
@@ -27,6 +29,7 @@ public class KujiObj {
         private transient List<String> rewardNames;
         private transient Integer rewardTotal;
 
+        private Boolean jumpAnimation = false;
         private ConfigInterface previewGuiSettings;
         private ConfigInterface displayGuiSettings;
         private List<Integer> previewSlots = Lists.newArrayList(10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34);
@@ -50,7 +53,7 @@ public class KujiObj {
         private ExtendedConfigItem casinoMarkLeft;
         private ExtendedConfigItem casinoMarkRight;
 
-        private Integer oneDrawLimit = 0;
+        private Integer limitPerDraw = 0;
         private Reward lastShot;
         private Boolean oneRound = true;
         private double chance = 100d;
@@ -104,6 +107,10 @@ public class KujiObj {
                 rewardTotal = rewards.stream().mapToInt(Reward::getAmountPerKuji).sum();
             }
             return rewardTotal;
+        }
+
+        public Boolean getJumpAnimation() {
+            return jumpAnimation;
         }
 
         public ConfigInterface getPreviewGuiSettings() {
@@ -171,8 +178,8 @@ public class KujiObj {
             return casinoMarkRight;
         }
 
-        public Integer getOneDrawLimit() {
-            return oneDrawLimit;
+        public Integer getLimitPerDraw() {
+            return limitPerDraw;
         }
 
         public Reward getLastShot() {
@@ -211,10 +218,6 @@ public class KujiObj {
 
         public String getId() {
             return id;
-        }
-
-        public List<String> getCommands() {
-            return commands;
         }
 
         public Integer getAmountPerKuji() {

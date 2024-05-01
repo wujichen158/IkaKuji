@@ -109,7 +109,7 @@ public class CrateFactory {
     }
 
     public static KujiObj.Crate get(String crateName) {
-        return LOADED_CRATES.get(crateName.toLowerCase(Locale.ROOT));
+        return LOADED_CRATES.get(crateName);
     }
 
     public static Map<String, KujiObj.Crate> getAll() {

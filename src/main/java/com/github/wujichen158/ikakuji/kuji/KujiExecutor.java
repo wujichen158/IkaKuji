@@ -11,6 +11,7 @@ import com.github.wujichen158.ikakuji.config.IkaKujiLocaleCfg;
 import com.github.wujichen158.ikakuji.config.KujiObj;
 import com.github.wujichen158.ikakuji.lib.Placeholders;
 import com.github.wujichen158.ikakuji.lib.Reference;
+import com.github.wujichen158.ikakuji.util.CrateFactory;
 import com.github.wujichen158.ikakuji.util.MsgUtil;
 import com.github.wujichen158.ikakuji.util.PlayerKujiFactory;
 import com.google.common.collect.Lists;
@@ -33,6 +34,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -51,15 +53,26 @@ public class KujiExecutor {
 
     /**
      * Do these things:
-     * 1. Give last shot
-     * 2. Clear player drawn list if the crate isn't once
-     * 3. Save cache and file
+     * <p>
+     * 1. Give the reward
+     * </p>
+     * <p>
+     * 2. Give last shot
+     * </p>
+     * <p>
+     * 3. Clear player drawn list if the crate isn't once
+     * </p>
+     * <p>
+     * 4. Save cache and file
+     * </p>
      *
      * @param player
      * @param playerDrawn
      * @param crate
      */
     public static void rewardPostProcess(ForgeEnvyPlayer player, KujiObj.Reward finalReward, List<String> playerDrawn, KujiObj.Crate crate) {
+        finalReward.give(player);
+
         boolean isLast = false;
         if (isFullDrawn(playerDrawn, crate)) {
             isLast = true;
@@ -171,22 +184,23 @@ public class KujiExecutor {
         }
 
         PlayerEntity player = event.getPlayer();
-        if (executeKujiLogic(player, crate)) {
+        AtomicInteger minCount = new AtomicInteger(event.getItemStack().getCount());
+        if (executeKujiLogic(player, crate, minCount)) {
             //Consume crate
             if (!player.isCreative() && takeItem) {
-                event.getItemStack().shrink(1);
+                event.getItemStack().shrink(minCount.get());
             }
         }
     }
 
-    public static boolean executeKujiLogic(PlayerEntity player, KujiObj.Crate crate) {
+    public static boolean executeKujiLogic(PlayerEntity player, KujiObj.Crate crate, AtomicInteger minCount) {
         ForgeEnvyPlayer envyPlayer = IkaKuji.getInstance().getPlayerManager().getPlayer((ServerPlayerEntity) player);
         if (!PlayerKujiFactory.hasPlayer(envyPlayer.getUniqueId())) {
             return false;
         }
 
-        List<String> playerDrawn = PlayerKujiFactory.get(envyPlayer.getUniqueId())
-                .getKujiData().getOrDefault(crate.getDisplayName(), Lists.newArrayList());
+        Map<String, List<String>> playerKujiData = PlayerKujiFactory.get(envyPlayer.getUniqueId()).getKujiData();
+        List<String> playerDrawn = playerKujiData.getOrDefault(crate.getDisplayName(), Lists.newArrayList());
 
         //Preview
         if (player.isShiftKeyDown()) {
@@ -197,32 +211,86 @@ public class KujiExecutor {
         //Open
         IkaKujiLocaleCfg.Messages messages = IkaKuji.getInstance().getLocale().getMessages();
 
+        List<String> preCrates = crate.getPreCrates();
+        if (Optional.ofNullable(preCrates).isPresent()) {
+            List<String> incompleteCrates = Lists.newArrayList();
+            for (String preCrateName : preCrates) {
+                Optional.ofNullable(playerKujiData.get(preCrateName)).ifPresent(preCratePlayerDrawn -> {
+                    Optional.ofNullable(CrateFactory.get(preCrateName)).ifPresent(preCrate -> {
+                        if (!isFullDrawn(preCratePlayerDrawn, preCrate)) {
+                            incompleteCrates.add(preCrateName);
+                        }
+                    });
+                });
+            }
+            if (!incompleteCrates.isEmpty()) {
+                player.sendMessage(MsgUtil.prefixedColorMsg(messages.getIncompletePreKuji(), incompleteCrates), player.getUUID());
+                return false;
+            }
+        }
+
         // Check full
         if (KujiExecutor.isFullDrawn(playerDrawn, crate) && crate.getOneRound()) {
             player.sendMessage(MsgUtil.prefixedColorMsg(messages.getOneRoundMsg()), player.getUUID());
             return false;
         }
 
-        // Generate rewards
-        List<KujiObj.Reward> rewards = generateRandomRewards(playerDrawn, crate);
-        if (rewards.isEmpty()) {
-            player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNoAvailableRwdMsg()), player.getUUID());
-            return false;
-        }
 
-        //Take item options must execute last
-        //Check and take key
-        if (!checkKeyIfHas(crate.getKey(), player)) {
-            player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNeedKeyMsg(), crate.getKey().getName()), player.getUUID());
-            return false;
-        }
+        // Generate available rewards list and total weight
+        List<Pair<KujiObj.Reward, Double>> availableRewards = Lists.newArrayList();
+        double totalWeight = getWeightWithAvailableRewards(availableRewards, playerDrawn, crate);
 
-        //TODO: Async?
-        KujiGuiManager.open(crate, envyPlayer, playerDrawn, rewards);
+        List<KujiObj.Reward> rewards;
+        if (crate.getJumpAnimation()) {
+            // Min availableReward size, limitPerDraw, crate count and key count
+            int times = Math.min(availableRewards.size(), minCount.get());
+            int limitPerDraw = crate.getLimitPerDraw();
+            if (limitPerDraw > 0) {
+                times = Math.min(limitPerDraw, times);
+            }
+
+            //Take item options must execute last
+            //Check and take key
+            int keyCount = checkAndTakeKeys(crate.getKey(), player, times);
+            if (keyCount == -1) {
+                player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNeedKeyMsg(), crate.getKey().getName()), player.getUUID());
+                return false;
+            } else if (keyCount > 0) {
+                times = keyCount;
+            }
+            minCount.set(times);
+
+            // Generate rewards
+            rewards = genRandomRewards(availableRewards, totalWeight, playerDrawn, times);
+            if (rewards.isEmpty()) {
+                player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNoAvailableRwdMsg()), player.getUUID());
+                return false;
+            }
+
+            rewardPostProcess(envyPlayer, rewards.get(0), playerDrawn, crate);
+        } else {
+            //TODO: Async?
+
+            // Generate rewards
+            rewards = genRandomRewards(availableRewards, totalWeight, playerDrawn);
+            if (rewards.isEmpty()) {
+                player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNoAvailableRwdMsg()), player.getUUID());
+                return false;
+            }
+
+            //Take item options must execute last
+            //Check and take key
+            if (!checkAndTakeKey(crate.getKey(), player)) {
+                player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNeedKeyMsg(), crate.getKey().getName()), player.getUUID());
+                return false;
+            }
+
+            KujiGuiManager.open(crate, envyPlayer, playerDrawn, rewards);
+        }
         return true;
     }
 
-    private static boolean checkKeyIfHas(ExtendedConfigItem crateKey, PlayerEntity player) {
+    private static boolean checkAndTakeKey(ExtendedConfigItem crateKey, PlayerEntity player) {
         if (Optional.ofNullable(crateKey).isPresent()) {
             String crateKeyName = crateKey.getType();
 
@@ -232,7 +300,11 @@ public class KujiExecutor {
                         .filter(regName -> regName.equals(crateKeyName)).isPresent()) {
                     //Consume key
                     if (!player.isCreative()) {
-                        invItem.shrink(crateKey.getAmount());
+                        if (crateKey.getAmount() <= invItem.getCount()) {
+                            invItem.shrink(crateKey.getAmount());
+                        } else {
+                            return false;
+                        }
                     }
                     return true;
                 }
@@ -242,9 +314,31 @@ public class KujiExecutor {
         return true;
     }
 
-    private static List<KujiObj.Reward> generateRandomRewards(List<String> playerDrawn, KujiObj.Crate crate) {
+    private static int checkAndTakeKeys(ExtendedConfigItem crateKey, PlayerEntity player, int minCount) {
+        if (Optional.ofNullable(crateKey).isPresent()) {
+            String crateKeyName = crateKey.getType();
+
+            for (ItemStack invItem : player.inventory.items) {
+                if (Optional.ofNullable(invItem.getItem().getRegistryName())
+                        .map(ResourceLocation::toString)
+                        .filter(regName -> regName.equals(crateKeyName)).isPresent()) {
+                    //Consume keys
+                    if (!player.isCreative()) {
+                        int maxKeyCount = invItem.getCount() / crateKey.getAmount();
+                        minCount = Math.min(minCount, maxKeyCount);
+                        invItem.shrink(crateKey.getAmount() * minCount);
+                        return minCount;
+                    }
+                    return 0;
+                }
+            }
+            return -1;
+        }
+        return 0;
+    }
+
+    private static double getWeightWithAvailableRewards(List<Pair<KujiObj.Reward, Double>> availableRewards, List<String> playerDrawn, KujiObj.Crate crate) {
         Map<String, Long> drawnMap = playerDrawn.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-        List<Pair<KujiObj.Reward, Double>> availableRewards = Lists.newArrayList();
         double totalWeight = 0;
         for (KujiObj.Reward reward : crate.getRewards()) {
             int availableAmount = getAvailableAmount(reward.getAmountPerKuji(), drawnMap.get(reward.getId()));
@@ -254,10 +348,21 @@ public class KujiExecutor {
                 availableRewards.add(new Pair<>(reward, rewardWeight));
             }
         }
+        return totalWeight;
+    }
 
+    /**
+     * Generate a reward list with the final reward in the first elem
+     *
+     * @param availableRewards
+     * @param totalWeight
+     * @param playerDrawn
+     * @return
+     */
+    private static List<KujiObj.Reward> genRandomRewards(List<Pair<KujiObj.Reward, Double>> availableRewards, double totalWeight, List<String> playerDrawn) {
+        List<KujiObj.Reward> rewards = Lists.newArrayList();
         double randomWeight = Reference.RANDOM.nextDouble() * totalWeight;
         double cumulativeWeight = 0.0;
-        List<KujiObj.Reward> rewards = Lists.newArrayList();
         for (Pair<KujiObj.Reward, Double> weightedReward : availableRewards) {
             if (cumulativeWeight < randomWeight && cumulativeWeight + weightedReward.getSecond() >= randomWeight) {
                 KujiObj.Reward reward = weightedReward.getFirst();
@@ -267,6 +372,33 @@ public class KujiExecutor {
                 rewards.add(weightedReward.getFirst());
             }
             cumulativeWeight += weightedReward.getSecond();
+        }
+        return rewards;
+    }
+
+    /**
+     * Generate a reward list which has times size
+     *
+     * @param availableRewards
+     * @param totalWeight
+     * @param playerDrawn
+     * @param times
+     * @return
+     */
+    private static List<KujiObj.Reward> genRandomRewards(List<Pair<KujiObj.Reward, Double>> availableRewards, double totalWeight, List<String> playerDrawn, int times) {
+        List<KujiObj.Reward> rewards = Lists.newArrayList();
+        for (int i = 0; i < times; i++) {
+            double randomWeight = Reference.RANDOM.nextDouble() * totalWeight;
+            double cumulativeWeight = 0.0;
+            for (Pair<KujiObj.Reward, Double> weightedReward : availableRewards) {
+                if (cumulativeWeight >= randomWeight) {
+                    KujiObj.Reward reward = weightedReward.getFirst();
+                    playerDrawn.add(reward.getId());
+                    rewards.add(0, reward);
+                    break;
+                }
+                cumulativeWeight += weightedReward.getSecond();
+            }
         }
         return rewards;
     }
