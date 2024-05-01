@@ -15,11 +15,25 @@ public class PermissionNodes {
     public static final String STOP_NODE = Reference.MOD_ID + "." + ADMIN_NODE + ".stop";
 
 
+    private static final String OPEN_CRATE_NODE = Reference.MOD_ID + "." + USER_NODE + ".open.%s";
+
+    public static String getOpenPermNode(String crateName) {
+        return String.format(OPEN_CRATE_NODE, crateName);
+    }
+
+    private static final String PREVIEW_CRATE_NODE = Reference.MOD_ID + "." + USER_NODE + ".preview.%s";
+
+    public static String getPreviewPermNode(String crateName) {
+        return String.format(PREVIEW_CRATE_NODE, crateName);
+    }
 
     //TODO: add an extra param that specify global or self. global by default, can click to swith like GD
     public static final String LIST_NODE = Reference.MOD_ID + "." + USER_NODE + ".list";
 
-    //TODO: Add subnode like .join.<kuji_name>
-    public static final String JOIN_NODE = Reference.MOD_ID + "." + USER_NODE + ".join";
+    private static final String JOIN_NODE = Reference.MOD_ID + "." + USER_NODE + ".join.%s";
+
+    public static String getJoinPermNode(String crateName) {
+        return String.format(JOIN_NODE, crateName);
+    }
 
 }

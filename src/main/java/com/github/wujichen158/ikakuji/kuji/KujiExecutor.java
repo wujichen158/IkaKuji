@@ -9,6 +9,7 @@ import com.envyful.api.text.Placeholder;
 import com.github.wujichen158.ikakuji.IkaKuji;
 import com.github.wujichen158.ikakuji.config.IkaKujiLocaleCfg;
 import com.github.wujichen158.ikakuji.config.KujiObj;
+import com.github.wujichen158.ikakuji.lib.PermissionNodes;
 import com.github.wujichen158.ikakuji.lib.Placeholders;
 import com.github.wujichen158.ikakuji.lib.Reference;
 import com.github.wujichen158.ikakuji.util.CrateFactory;
@@ -200,16 +201,26 @@ public class KujiExecutor {
         }
 
         Map<String, List<String>> playerKujiData = PlayerKujiFactory.get(envyPlayer.getUniqueId()).getKujiData();
-        List<String> playerDrawn = playerKujiData.getOrDefault(crate.getDisplayName(), Lists.newArrayList());
+        String crateName = crate.getDisplayName();
+        List<String> playerDrawn = playerKujiData.getOrDefault(crateName, Lists.newArrayList());
+        IkaKujiLocaleCfg.Messages messages = IkaKuji.getInstance().getLocale().getMessages();
 
         //Preview
         if (player.isShiftKeyDown()) {
+            if (!IkaKuji.getInstance().getCommandFactory().hasPermission(player, PermissionNodes.getPreviewPermNode(crateName))) {
+                player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNoPreviewPermMsg(), crateName), player.getUUID());
+                return false;
+            }
+
             KujiGuiManager.preview(crate, envyPlayer, calAvailableRewards(playerDrawn, crate), 1);
             return false;
         }
 
         //Open
-        IkaKujiLocaleCfg.Messages messages = IkaKuji.getInstance().getLocale().getMessages();
+        if (!IkaKuji.getInstance().getCommandFactory().hasPermission(player, PermissionNodes.getOpenPermNode(crateName))) {
+            player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNoOpenPermMsg(), crateName), player.getUUID());
+            return false;
+        }
 
         List<String> preCrates = crate.getPreCrates();
         if (Optional.ofNullable(preCrates).isPresent()) {

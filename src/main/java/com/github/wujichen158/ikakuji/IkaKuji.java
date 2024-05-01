@@ -108,6 +108,10 @@ public class IkaKuji {
         return playerManager;
     }
 
+    public ForgeCommandFactory getCommandFactory() {
+        return commandFactory;
+    }
+
     public IkaKujiCfg getConfig() {
         return config;
     }

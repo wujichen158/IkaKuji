@@ -26,6 +26,11 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
         private String configReloaded = "&fSuccessfully reloaded!";
         private String giveKeyMsg = "&fYou give the key of crate %s to %s";
         private String giveCrateMsg = "&fYou give a crate %s to %s";
+        private String listTitle = "&6————————Kujis On-going————————";
+        private String listElemPrefix = "&e· %s";
+        private String listFooter = "&6——————————————————————————————";
+        private String noOpenPermMsg = "&fYou don't have permission to open crate %s";
+        private String noPreviewPermMsg = "&fYou don't have permission to preview crate %s";
         private String needKeyMsg = "&fYou need a %s to join this kuji!";
         private String incompletePreKuji = "&fYou will also need to complete these pre-kuji: %s";
         private String oneRoundMsg = "&fThis crate can only be opened for one round!";
@@ -47,6 +52,26 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
 
         public String getGiveCrateMsg() {
             return giveCrateMsg;
+        }
+
+        public String getListTitle() {
+            return listTitle;
+        }
+
+        public String getListElemPrefix() {
+            return listElemPrefix;
+        }
+
+        public String getListFooter() {
+            return listFooter;
+        }
+
+        public String getNoOpenPermMsg() {
+            return noOpenPermMsg;
+        }
+
+        public String getNoPreviewPermMsg() {
+            return noPreviewPermMsg;
         }
 
         public String getNeedKeyMsg() {

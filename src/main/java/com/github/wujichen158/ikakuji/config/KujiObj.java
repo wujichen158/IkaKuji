@@ -6,8 +6,10 @@ import com.envyful.api.forge.config.ConfigSound;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
 import com.envyful.api.forge.server.UtilForgeServer;
 import com.github.wujichen158.ikakuji.kuji.EnumCrateType;
+import com.github.wujichen158.ikakuji.kuji.KujiExecutor;
 import com.github.wujichen158.ikakuji.kuji.gui.EnumGuiPattern;
 import com.github.wujichen158.ikakuji.lib.Placeholders;
+import com.github.wujichen158.ikakuji.util.CrateFactory;
 import com.google.common.collect.Lists;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
@@ -278,6 +280,18 @@ public class KujiObj {
 
         public Map<String, List<String>> getKujiData() {
             return kujiData;
+        }
+
+        public List<String> getAvailableCrates() {
+            List<String> availableCrates = Lists.newArrayList();
+            kujiData.forEach((crateName, drawnList) -> {
+                Optional.ofNullable(CrateFactory.get(crateName)).ifPresent(crate -> {
+                    if (!KujiExecutor.isFullDrawn(drawnList, crate)) {
+                        availableCrates.add(crateName);
+                    }
+                });
+            });
+            return availableCrates;
         }
     }
 }
