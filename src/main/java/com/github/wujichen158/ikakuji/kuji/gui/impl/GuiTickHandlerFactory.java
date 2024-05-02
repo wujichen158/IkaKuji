@@ -122,12 +122,6 @@ public class GuiTickHandlerFactory {
             for (Integer slot : crate.getDisplaySlots()) {
                 pane.set(slot % 9, slot / 9, GuiFactory.displayable(coverItem));
             }
-            Optional.ofNullable(crate.getCasinoMarkLeft()).ifPresent(casinoMarkLeft ->
-                    UtilConfigItem.builder()
-                            .extendedConfigItem(pane, UtilConfigItem.fromConfigItem(casinoMarkLeft), casinoMarkLeft));
-            Optional.ofNullable(crate.getCasinoMarkRight()).ifPresent(casinoMarkRight ->
-                    UtilConfigItem.builder()
-                            .extendedConfigItem(pane, UtilConfigItem.fromConfigItem(casinoMarkRight), casinoMarkRight));
         }
 
     }
@@ -211,6 +205,12 @@ public class GuiTickHandlerFactory {
                             UtilConfigItem.fromConfigItem(rewards.get(Reference.RANDOM.nextInt(rewards.size())).getDisplayItem())));
                 }
             }
+            Optional.ofNullable(crate.getCasinoMarkLeft()).ifPresent(casinoMarkLeft ->
+                    UtilConfigItem.builder()
+                            .extendedConfigItem(pane, UtilConfigItem.fromConfigItem(casinoMarkLeft), casinoMarkLeft));
+            Optional.ofNullable(crate.getCasinoMarkRight()).ifPresent(casinoMarkRight ->
+                    UtilConfigItem.builder()
+                            .extendedConfigItem(pane, UtilConfigItem.fromConfigItem(casinoMarkRight), casinoMarkRight));
         }
 
         private List<Integer> get3Cols(List<Integer> displaySlots) {
