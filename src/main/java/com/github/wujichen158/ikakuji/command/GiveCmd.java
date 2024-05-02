@@ -41,15 +41,13 @@ public class GiveCmd {
         Optional.ofNullable(CrateFactory.get(crateName)).ifPresent(crate -> {
             List<ItemStack> itemStacks = Lists.newArrayList();
             IkaKujiLocaleCfg.Commands commands = IkaKuji.getInstance().getLocale().getCommands();
-            if (CrateDeliverCompleter.KEY.equals(type)) {
+            if (CrateDeliverCompleter.KEY.equalsIgnoreCase(type)) {
                 Optional.ofNullable(crate.getKey()).ifPresentOrElse(key -> {
                     itemStacks.add(UtilConfigItem.fromConfigItem(key));
                     sender.sendMessage(MsgUtil.prefixedColorMsg(commands.getGiveKey(), crateName, targetPlayer.getName()), targetPlayer.getUUID());
-                }, () -> {
-                    sender.sendMessage(MsgUtil.prefixedColorMsg(commands.getNoKey(), crateName), targetPlayer.getUUID());
-                });
-            } else if (CrateDeliverCompleter.CRATE.equals(type)) {
-                if (crate.getCrateType().equals(EnumCrateType.item) && CrateFactory.getAll().containsKey(crateName)) {
+                }, () -> sender.sendMessage(MsgUtil.prefixedColorMsg(commands.getNoKey(), crateName), targetPlayer.getUUID()));
+            } else if (CrateDeliverCompleter.CRATE.equalsIgnoreCase(type)) {
+                if (crate.getCrateType() == EnumCrateType.item && CrateFactory.getAll().containsKey(crateName)) {
                     for (Map<String, String> typeDatum : crate.getTypeData()) {
                         String itemName = typeDatum.get(type);
                         if (Optional.ofNullable(itemName).isPresent()) {

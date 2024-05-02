@@ -340,7 +340,6 @@ public class KujiExecutor {
             } else if (keyCount > 0) {
                 times = keyCount;
             }
-            IkaKuji.LOGGER.info("!!!invSize: " + invSize + ", keyCount: " + keyCount + ", limitperdraw: " + limitPerDraw + "avaRwdSize: " + availableRewards.size() + ", minCnt(crateCnt): " + minCount.get() + " times: " + times);
             minCount.set(times);
 
             // Generate rewards
