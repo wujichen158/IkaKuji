@@ -7,6 +7,8 @@ import com.envyful.api.forge.gui.factory.ForgeGuiFactory;
 import com.envyful.api.forge.player.ForgePlayerManager;
 import com.envyful.api.gui.factory.GuiFactory;
 import com.github.wujichen158.ikakuji.command.IkaKujiCmd;
+import com.github.wujichen158.ikakuji.command.completion.CrateDeliverCompleter;
+import com.github.wujichen158.ikakuji.command.completion.CrateNameCompleter;
 import com.github.wujichen158.ikakuji.config.IkaKujiCfg;
 import com.github.wujichen158.ikakuji.config.IkaKujiLocaleCfg;
 import com.github.wujichen158.ikakuji.lib.Reference;
@@ -101,6 +103,8 @@ public class IkaKuji {
 
     @SubscribeEvent
     public void onCommandRegistration(RegisterCommandsEvent event) {
+        this.commandFactory.registerCompleter(new CrateDeliverCompleter());
+        this.commandFactory.registerCompleter(new CrateNameCompleter());
         this.commandFactory.registerCommand(event.getDispatcher(), this.commandFactory.parseCommand(new IkaKujiCmd()));
     }
 
