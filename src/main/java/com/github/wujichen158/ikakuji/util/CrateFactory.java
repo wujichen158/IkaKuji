@@ -6,6 +6,7 @@ import com.envyful.api.forge.world.UtilWorld;
 import com.github.wujichen158.ikakuji.IkaKuji;
 import com.github.wujichen158.ikakuji.config.KujiCrateType;
 import com.github.wujichen158.ikakuji.config.KujiObj;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -21,11 +22,14 @@ public class CrateFactory {
     private static List<String> crateNameList;
 
     private static final Map<KujiCrateType.ItemWrapper, String> ITEM_CRATE_MAP = Maps.newHashMap();
+    private static final Map<String, List<ItemStack>> CRATE_ITEMS_MAP = Maps.newHashMap();
     private static final Map<String, Map<Triple<Integer, Integer, Integer>, String>> WORLD_POS_CRATE_MAP = Maps.newHashMap();
     private static final Map<String, String> ENTITY_CRATE_MAP = Maps.newHashMap();
 
-    private static void registerItemCrate(KujiCrateType.ItemWrapper itemWrapper, String crateName) {
+    private static void registerItemCrate(ItemStack itemStack, String crateName) {
+        KujiCrateType.ItemWrapper itemWrapper = new KujiCrateType.ItemWrapper(itemStack);
         ITEM_CRATE_MAP.put(itemWrapper, crateName);
+        CRATE_ITEMS_MAP.computeIfAbsent(crateName, key -> Lists.newArrayList()).add(itemStack);
     }
 
     private static void registerWorldPosCrate(KujiCrateType.PositionCrate positionCrate, String crateName) {
@@ -45,8 +49,7 @@ public class CrateFactory {
                 try {
                     Optional.ofNullable(node.node("type-data").getList(ExtendedConfigItem.class)).ifPresent(extendedConfigItems ->
                             extendedConfigItems.forEach(extendedConfigItem -> {
-                                KujiCrateType.ItemWrapper itemWrapper = new KujiCrateType.ItemWrapper(UtilConfigItem.fromConfigItem(extendedConfigItem));
-                                CrateFactory.registerItemCrate(itemWrapper, crateName);
+                                CrateFactory.registerItemCrate(UtilConfigItem.fromConfigItem(extendedConfigItem), crateName);
                             }));
                 } catch (SerializationException ignored) {
                     IkaKuji.LOGGER.warn(String.format("Item Kuji info %s has something wrong, please have a check.", crateName));
@@ -113,11 +116,25 @@ public class CrateFactory {
         return LOADED_CRATES;
     }
 
+    public static void clear() {
+        LOADED_CRATES.clear();
+        crateNameList.clear();
+
+        ITEM_CRATE_MAP.clear();
+        CRATE_ITEMS_MAP.clear();
+        WORLD_POS_CRATE_MAP.clear();
+        ENTITY_CRATE_MAP.clear();
+    }
+
     public static void updateAllRegisteredNames() {
         crateNameList = new ArrayList<>(LOADED_CRATES.keySet());
     }
 
     public static List<String> getAllRegisteredNames() {
         return crateNameList;
+    }
+
+    public static List<ItemStack> getItemsFromName(String crateName) {
+        return CRATE_ITEMS_MAP.get(crateName);
     }
 }

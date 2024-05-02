@@ -18,10 +18,12 @@ import java.util.stream.Stream;
 public class CfgPostProcessUtil {
 
     /**
-     * Load all crates from data dir
+     * Clear and load all crates from data dir
      * Then update all registered names for cmd completion
      */
     public static void loadAllCrates() {
+        CrateFactory.clear();
+
         try (Stream<Path> paths = Files.walk(Paths.get(Reference.CRATE_PATH))) {
             paths.filter(Files::isRegularFile)
                     .filter(path -> path.toString().endsWith(Reference.YAML_SUFFIX))
