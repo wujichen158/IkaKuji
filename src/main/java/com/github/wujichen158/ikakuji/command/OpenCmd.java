@@ -31,7 +31,7 @@ public class OpenCmd {
                     @Completable(CrateNameCompleter.class) @Argument String crateName) {
         Optional.ofNullable(CrateFactory.get(crateName)).ifPresent(crate -> KujiExecutor.executeKujiLogic(targetPlayer, crate, new AtomicInteger(1)));
         sender.sendMessage(
-                MsgUtil.prefixedColorMsg(IkaKuji.getInstance().getLocale().getMessages().getOpenCrateForPlayerMsg(), crateName, targetPlayer.getName()),
+                MsgUtil.prefixedColorMsg(IkaKuji.getInstance().getLocale().getMessages().getOpenCrateForPlayerMsg(), crateName, targetPlayer.getName().getString()),
                 targetPlayer.getUUID());
     }
 }

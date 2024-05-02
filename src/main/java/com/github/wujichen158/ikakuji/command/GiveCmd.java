@@ -44,7 +44,7 @@ public class GiveCmd {
             if (CrateDeliverCompleter.KEY.equalsIgnoreCase(type)) {
                 Optional.ofNullable(crate.getKey()).ifPresentOrElse(key -> {
                     itemStacks.add(UtilConfigItem.fromConfigItem(key));
-                    sender.sendMessage(MsgUtil.prefixedColorMsg(commands.getGiveKey(), crateName, targetPlayer.getName()), targetPlayer.getUUID());
+                    sender.sendMessage(MsgUtil.prefixedColorMsg(commands.getGiveKey(), crateName, targetPlayer.getName().getString()), targetPlayer.getUUID());
                 }, () -> sender.sendMessage(MsgUtil.prefixedColorMsg(commands.getNoKey(), crateName), targetPlayer.getUUID()));
             } else if (CrateDeliverCompleter.CRATE.equalsIgnoreCase(type)) {
                 if (crate.getCrateType() == EnumCrateType.item && CrateFactory.getAll().containsKey(crateName)) {
@@ -52,7 +52,7 @@ public class GiveCmd {
                         String itemName = typeDatum.get(type);
                         if (Optional.ofNullable(itemName).isPresent()) {
                             itemStacks.add(new ItemStack(ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(itemName))));
-                            sender.sendMessage(MsgUtil.prefixedColorMsg(commands.getGiveCrate(), crateName, targetPlayer.getName()), targetPlayer.getUUID());
+                            sender.sendMessage(MsgUtil.prefixedColorMsg(commands.getGiveCrate(), crateName, targetPlayer.getName().getString()), targetPlayer.getUUID());
                         } else {
                             sender.sendMessage(MsgUtil.prefixedColorMsg(commands.getInvalidItemCrate(), crateName), targetPlayer.getUUID());
                         }
