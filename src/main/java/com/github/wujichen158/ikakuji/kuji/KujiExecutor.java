@@ -38,6 +38,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class KujiExecutor {
     public static void playSound(ConfigSound winSound, PlayerEntity player) {
@@ -74,6 +75,22 @@ public class KujiExecutor {
     public static void rewardPostProcess(ForgeEnvyPlayer player, KujiObj.Reward finalReward, List<String> playerDrawn, KujiObj.Crate crate) {
         finalReward.give(player);
 
+        boolean isLast = processLastThings(player, playerDrawn, crate);
+        if (IkaKuji.getInstance().getLocale().getLogs().getEnable()) {
+            logRes(player, crate, finalReward, isLast);
+        }
+    }
+
+    public static void rewardPostProcess(ForgeEnvyPlayer player, List<KujiObj.Reward> finalRewards, List<String> playerDrawn, KujiObj.Crate crate) {
+        finalRewards.forEach(reward -> reward.give(player));
+
+        boolean isLast = processLastThings(player, playerDrawn, crate);
+        if (IkaKuji.getInstance().getLocale().getLogs().getEnable()) {
+            logRes(player, crate, finalRewards, isLast);
+        }
+    }
+
+    private static boolean processLastThings(ForgeEnvyPlayer player, List<String> playerDrawn, KujiObj.Crate crate) {
         boolean isLast = false;
         if (isFullDrawn(playerDrawn, crate)) {
             isLast = true;
@@ -86,10 +103,7 @@ public class KujiExecutor {
             }
         }
         PlayerKujiFactory.updatePlayerDrawn(playerDrawn, player.getUniqueId(), crate.getDisplayName());
-
-        if (IkaKuji.getInstance().getLocale().getLogs().getEnable()) {
-            logRes(player, crate, finalReward, isLast);
-        }
+        return isLast;
     }
 
     /**
@@ -104,7 +118,7 @@ public class KujiExecutor {
         UtilConcurrency.runAsync(() -> {
             IkaKujiLocaleCfg.Logs logs = IkaKuji.getInstance().getLocale().getLogs();
             LocalDateTime now = LocalDateTime.now();
-            String logEntry = String.format("%s-%s-%s %02d:%02d:%02d: %s\n",
+            StringBuilder builder = new StringBuilder(String.format("%s-%s-%s %02d:%02d:%02d: %s",
                     now.getYear(), now.getMonthValue(), now.getDayOfMonth(),
                     now.getHour(), now.getMinute(), now.getSecond(),
                     logs.getWinRewardLog()
@@ -112,16 +126,53 @@ public class KujiExecutor {
                             .replace(Placeholders.CRATE_NAME, crate.getDisplayName())
                             .replace(Placeholders.REWARD_ID, finalReward.getId())
                             .replace(Placeholders.REWARD_NAME, finalReward.getDisplayItem().getName())
-            );
-            if (isLast) {
-                logEntry += logs.getLastShotLog();
-            }
-            try {
-                Files.write(Paths.get(Reference.LOG_PATH), logEntry.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-            } catch (IOException e) {
-                IkaKuji.LOGGER.error(e.toString());
-            }
+            ));
+            checkLastAndLog(logs, builder, isLast);
         });
+    }
+
+    /**
+     * Log multi draws to file
+     *
+     * @param player
+     * @param crate
+     * @param finalRewards
+     * @param isLast
+     */
+    private static void logRes(ForgeEnvyPlayer player, KujiObj.Crate crate, List<KujiObj.Reward> finalRewards, boolean isLast) {
+        UtilConcurrency.runAsync(() -> {
+            IkaKujiLocaleCfg.Logs logs = IkaKuji.getInstance().getLocale().getLogs();
+            LocalDateTime now = LocalDateTime.now();
+            StringBuilder builder = new StringBuilder();
+            int finalRewardsSize = finalRewards.size();
+            for (int i = 0; i < finalRewardsSize; i++) {
+                builder.append(String.format("%s-%s-%s %02d:%02d:%02d: %s\n",
+                        now.getYear(), now.getMonthValue(), now.getDayOfMonth(),
+                        now.getHour(), now.getMinute(), now.getSecond(),
+                        logs.getWinRewardLog()
+                                .replace(Placeholders.PLAYER_NAME, player.getName())
+                                .replace(Placeholders.CRATE_NAME, crate.getDisplayName())
+                                .replace(Placeholders.REWARD_ID, finalRewards.get(i).getId())
+                                .replace(Placeholders.REWARD_NAME, finalRewards.get(i).getDisplayItem().getName())
+                ));
+                if (i < finalRewardsSize - 1) {
+                    builder.append("\n");
+                }
+            }
+            checkLastAndLog(logs, builder, isLast);
+        });
+    }
+
+    private static void checkLastAndLog(IkaKujiLocaleCfg.Logs logs, StringBuilder builder, boolean isLast) {
+        if (isLast) {
+            builder.append(logs.getLastShotLog());
+        }
+        String logEntry = builder.append("\n").toString();
+        try {
+            Files.write(Paths.get(Reference.LOG_PATH), logEntry.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            IkaKuji.LOGGER.error(e.toString());
+        }
     }
 
     /**
@@ -178,17 +229,17 @@ public class KujiExecutor {
     }
 
 
-    public static void executeKujiLogic(PlayerInteractEvent event, KujiObj.Crate crate, boolean takeItem) {
+    public static void executeKujiLogic(PlayerInteractEvent event, KujiObj.Crate crate, boolean itemCrate) {
         // Must check here, or it'll execute twice
         if (event.getHand() != Hand.MAIN_HAND) {
             return;
         }
 
         PlayerEntity player = event.getPlayer();
-        AtomicInteger minCount = new AtomicInteger(event.getItemStack().getCount());
+        AtomicInteger minCount = new AtomicInteger(itemCrate ? event.getItemStack().getCount() : -1);
         if (executeKujiLogic(player, crate, minCount)) {
             //Consume crate
-            if (!player.isCreative() && takeItem) {
+            if (!player.isCreative() && itemCrate) {
                 event.getItemStack().shrink(minCount.get());
             }
         }
@@ -271,15 +322,14 @@ public class KujiExecutor {
         List<KujiObj.Reward> rewards;
         if (crate.isJumpAnimation()) {
             // Min availableReward size, limitPerDraw, inventory size, crate count and key count
-            int times = Math.min(availableRewards.size(), minCount.get());
-            if (invSize > 0) {
-                times = Math.min(invSize, times);
-            }
-
+            int crateCount = minCount.get();
             int limitPerDraw = crate.getLimitPerDraw();
-            if (limitPerDraw > 0) {
-                times = Math.min(limitPerDraw, times);
-            }
+            int times = Stream.of(availableRewards.size(),
+                            crateCount != -1 ? crateCount : Integer.MAX_VALUE,
+                            invSize > 0 ? invSize : Integer.MAX_VALUE,
+                            limitPerDraw > 0 ? limitPerDraw : Integer.MAX_VALUE)
+                    .min(Integer::compare)
+                    .orElse(0);
 
             //Take item options must execute last
             //Check and take key
@@ -290,6 +340,7 @@ public class KujiExecutor {
             } else if (keyCount > 0) {
                 times = keyCount;
             }
+            IkaKuji.LOGGER.info("!!!invSize: " + invSize + ", keyCount: " + keyCount + ", limitperdraw: " + limitPerDraw + "avaRwdSize: " + availableRewards.size() + ", minCnt(crateCnt): " + minCount.get() + " times: " + times);
             minCount.set(times);
 
             // Generate rewards
@@ -299,7 +350,7 @@ public class KujiExecutor {
                 return false;
             }
 
-            rewardPostProcess(envyPlayer, rewards.get(0), playerDrawn, crate);
+            rewardPostProcess(envyPlayer, rewards, playerDrawn, crate);
         } else {
             //TODO: Async?
 
