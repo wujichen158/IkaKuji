@@ -31,7 +31,7 @@ public class KujiObj {
         private transient List<String> rewardNames;
         private transient Integer rewardTotal;
 
-        private Boolean jumpAnimation = false;
+        private boolean jumpAnimation = false;
         private ConfigInterface previewGuiSettings;
         private ConfigInterface displayGuiSettings;
         private List<Integer> previewSlots = Lists.newArrayList(10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34);
@@ -45,19 +45,20 @@ public class KujiObj {
         /**
          * Times are all in second
          */
-        private Double initialDelay = 2d;
-        private Double repeatDelay = 1d;
-        private Double spinDuration = 10d;
-        private Integer finalRewardPosition = 22;
+        private double initialDelay = 2d;
+        private double repeatDelay = 1d;
+        private double spinDuration = 10d;
+        private int finalRewardPosition = 22;
         private ConfigSound rollSound;
 
         private ExtendedConfigItem coverItem;
         private ExtendedConfigItem casinoMarkLeft;
         private ExtendedConfigItem casinoMarkRight;
 
-        private Integer limitPerDraw = 0;
+        private int limitPerDraw = 0;
         private Reward lastShot;
-        private Boolean oneRound = true;
+        private boolean oneRound = true;
+        private boolean checkInvBefore = true;
         private double chance = 100d;
         private Reward consolationReward;
         private List<String> preCrates;
@@ -111,7 +112,7 @@ public class KujiObj {
             return rewardTotal;
         }
 
-        public Boolean getJumpAnimation() {
+        public boolean getJumpAnimation() {
             return jumpAnimation;
         }
 
@@ -143,7 +144,7 @@ public class KujiObj {
             return placeholderButton;
         }
 
-        public Integer getFinalRewardPosition() {
+        public int getFinalRewardPosition() {
             return finalRewardPosition;
         }
 
@@ -152,15 +153,15 @@ public class KujiObj {
             return guiChangePattern;
         }
 
-        public Double getInitialDelay() {
+        public double getInitialDelay() {
             return initialDelay;
         }
 
-        public Double getRepeatDelay() {
+        public double getRepeatDelay() {
             return repeatDelay;
         }
 
-        public Double getSpinDuration() {
+        public double getSpinDuration() {
             return spinDuration;
         }
 
@@ -180,7 +181,7 @@ public class KujiObj {
             return casinoMarkRight;
         }
 
-        public Integer getLimitPerDraw() {
+        public int getLimitPerDraw() {
             return limitPerDraw;
         }
 
@@ -188,7 +189,7 @@ public class KujiObj {
             return lastShot;
         }
 
-        public Boolean getOneRound() {
+        public boolean getOneRound() {
             return oneRound;
         }
 
