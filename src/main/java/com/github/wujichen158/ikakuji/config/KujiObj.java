@@ -112,7 +112,7 @@ public class KujiObj {
             return rewardTotal;
         }
 
-        public boolean getJumpAnimation() {
+        public boolean isJumpAnimation() {
             return jumpAnimation;
         }
 
@@ -189,8 +189,12 @@ public class KujiObj {
             return lastShot;
         }
 
-        public boolean getOneRound() {
+        public boolean isOneRound() {
             return oneRound;
+        }
+
+        public boolean isCheckInvBefore() {
+            return checkInvBefore;
         }
 
         public double getChance() {

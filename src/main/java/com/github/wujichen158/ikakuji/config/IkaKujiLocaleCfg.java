@@ -34,8 +34,9 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
         private String noOpenPermMsg = "&fYou don't have permission to open crate %s";
         private String noPreviewPermMsg = "&fYou don't have permission to preview crate %s";
         private String needKeyMsg = "&fYou need a %s to join this kuji!";
-        private String incompletePreKuji = "&fYou will also need to complete these pre-kuji: %s";
+        private String incompletePreKujiMsg = "&fYou will also need to complete these pre-kuji: %s";
         private String oneRoundMsg = "&fThis crate can only be opened for one round!";
+        private String insufficientInvSizeMsg = "&fYou don't have enough inventory space to receive the reward";
         private String noAvailableRwdMsg = "&fThis crate has no available rewards!";
         private String openCrateForPlayerMsg = "&fSuccessfully open crate %s for %s";
         private String rewardRemainCount = "&f%d remaining";
@@ -56,12 +57,16 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
             return needKeyMsg;
         }
 
-        public String getIncompletePreKuji() {
-            return incompletePreKuji;
+        public String getIncompletePreKujiMsg() {
+            return incompletePreKujiMsg;
         }
 
         public String getOneRoundMsg() {
             return oneRoundMsg;
+        }
+
+        public String getInsufficientInvSizeMsg() {
+            return insufficientInvSizeMsg;
         }
 
         public String getNoAvailableRwdMsg() {

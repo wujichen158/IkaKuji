@@ -81,7 +81,7 @@ public class KujiExecutor {
             // Give last shot if present
             Optional.ofNullable(crate.getLastShot()).ifPresent(lastShot -> lastShot.give(player));
 
-            if (!crate.getOneRound()) {
+            if (!crate.isOneRound()) {
                 playerDrawn.clear();
             }
         }
@@ -205,8 +205,9 @@ public class KujiExecutor {
         List<String> playerDrawn = playerKujiData.getOrDefault(crateName, Lists.newArrayList());
         IkaKujiLocaleCfg.Messages messages = IkaKuji.getInstance().getLocale().getMessages();
 
-        //Preview
+        // Preview
         if (player.isShiftKeyDown()) {
+            // Perm check
             if (!IkaKuji.getInstance().getCommandFactory().hasPermission(player, PermissionNodes.getPreviewPermNode(crateName))) {
                 player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNoPreviewPermMsg(), crateName), player.getUUID());
                 return false;
@@ -216,12 +217,14 @@ public class KujiExecutor {
             return false;
         }
 
-        //Open
+        // Open
+        // Perm check
         if (!IkaKuji.getInstance().getCommandFactory().hasPermission(player, PermissionNodes.getOpenPermNode(crateName))) {
             player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNoOpenPermMsg(), crateName), player.getUUID());
             return false;
         }
 
+        // Pre-crates check
         List<String> preCrates = crate.getPreCrates();
         if (Optional.ofNullable(preCrates).isPresent()) {
             List<String> incompleteCrates = Lists.newArrayList();
@@ -235,13 +238,13 @@ public class KujiExecutor {
                 });
             }
             if (!incompleteCrates.isEmpty()) {
-                player.sendMessage(MsgUtil.prefixedColorMsg(messages.getIncompletePreKuji(), incompleteCrates), player.getUUID());
+                player.sendMessage(MsgUtil.prefixedColorMsg(messages.getIncompletePreKujiMsg(), incompleteCrates), player.getUUID());
                 return false;
             }
         }
 
         // Check full
-        if (KujiExecutor.isFullDrawn(playerDrawn, crate) && crate.getOneRound()) {
+        if (KujiExecutor.isFullDrawn(playerDrawn, crate) && crate.isOneRound()) {
             player.sendMessage(MsgUtil.prefixedColorMsg(messages.getOneRoundMsg()), player.getUUID());
             return false;
         }
@@ -251,10 +254,28 @@ public class KujiExecutor {
         List<Pair<KujiObj.Reward, Double>> availableRewards = Lists.newArrayList();
         double totalWeight = getWeightWithAvailableRewards(availableRewards, playerDrawn, crate);
 
+        // Check and cal available inventory size
+        int invSize = 0;
+        if (crate.isCheckInvBefore()) {
+            for (ItemStack itemstack : player.inventory.items) {
+                if (itemstack.isEmpty()) {
+                    invSize++;
+                }
+            }
+            if (invSize == 0) {
+                player.sendMessage(MsgUtil.prefixedColorMsg(messages.getInsufficientInvSizeMsg()), player.getUUID());
+                return false;
+            }
+        }
+
         List<KujiObj.Reward> rewards;
-        if (crate.getJumpAnimation()) {
-            // Min availableReward size, limitPerDraw, crate count and key count
+        if (crate.isJumpAnimation()) {
+            // Min availableReward size, limitPerDraw, inventory size, crate count and key count
             int times = Math.min(availableRewards.size(), minCount.get());
+            if (invSize > 0) {
+                times = Math.min(invSize, times);
+            }
+
             int limitPerDraw = crate.getLimitPerDraw();
             if (limitPerDraw > 0) {
                 times = Math.min(limitPerDraw, times);
