@@ -24,7 +24,6 @@ public class KujiObj {
     public static class Crate {
         private String displayName;
         private EnumCrateType crateType;
-        private List<Map<String, String>> typeData;
         private ExtendedConfigItem key;
         private List<Reward> rewards;
         private transient Map<String, Integer> rewardAmountMap;
@@ -69,10 +68,6 @@ public class KujiObj {
 
         public EnumCrateType getCrateType() {
             return crateType;
-        }
-
-        public List<Map<String, String>> getTypeData() {
-            return typeData;
         }
 
         public ExtendedConfigItem getKey() {
