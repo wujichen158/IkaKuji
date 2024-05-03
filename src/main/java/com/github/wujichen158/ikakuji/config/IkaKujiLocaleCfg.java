@@ -38,7 +38,7 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
         private String oneRoundMsg = "&fThis crate can only be opened for one round!";
         private String insufficientInvSizeMsg = "&fYou don't have enough inventory space to receive the reward";
         private String noAvailableRwdMsg = "&fThis crate has no available rewards!";
-        private String openCrateForPlayerMsg = "&fSuccessfully open crate %s for %s";
+        private String openCrateForPlayerMsg = "&fSuccessfully open crate %s for player %s";
         private String lastRewardFailMsg = "&fFailed to deliver the last-shot reward of crate %s, please contact admin to deliver again";
         private String rewardRemainCount = "&f%d remaining";
 
@@ -109,11 +109,11 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
     @ConfigSerializable
     public static class Commands {
         private String configReloaded = "&fSuccessfully reloaded!";
-        private String giveKey = "&fYou give the key of crate %s to %s";
+        private String giveKey = "&fYou give the key of crate %s to player %s";
         private String noKey = "&fCrate %s has no key";
-        private String giveCrate = "&fYou give a crate %s to %s";
+        private String giveCrate = "&fYou give a crate %s to player %s";
         private String invalidItemCrate = "&fInvalid item crate name %s!";
-        private String notItemCrate = "&fCrate %s is not an item crate!";
+        private String notItemCrate = "&fCrate %s is not an item chest and cannot be given";
         private String listTitle = "&6————————Kujis On-going————————";
         private String listElemPrefix = "&e· %s";
         private String listFooter = "&6——————————————————————————————";
