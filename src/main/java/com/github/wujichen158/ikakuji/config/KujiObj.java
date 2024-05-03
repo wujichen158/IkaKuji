@@ -51,8 +51,7 @@ public class KujiObj {
         private ConfigSound rollSound;
 
         private ExtendedConfigItem coverItem;
-        private ExtendedConfigItem casinoMarkLeft;
-        private ExtendedConfigItem casinoMarkRight;
+        private List<ExtendedConfigItem> indicators;
 
         private int limitPerDraw = 0;
         private Reward lastShot;
@@ -168,12 +167,8 @@ public class KujiObj {
             return coverItem;
         }
 
-        public ExtendedConfigItem getCasinoMarkLeft() {
-            return casinoMarkLeft;
-        }
-
-        public ExtendedConfigItem getCasinoMarkRight() {
-            return casinoMarkRight;
+        public List<ExtendedConfigItem> getIndicators() {
+            return indicators;
         }
 
         public int getLimitPerDraw() {

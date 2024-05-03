@@ -48,10 +48,8 @@ public class KujiGuiManager {
                         .build())
                 .build();
 
-        UtilConfigInterface.fillBackground(pane, crate.getDisplayGuiSettings());
-
-        // Display init kuji gui
-        tickHandler.initDisplaySlots(pane, crate, rewards);
+        // init kuji GUI
+        tickHandler.initGui(pane, crate, rewards);
 
         GuiFactory.guiBuilder()
                 .addPane(pane)
