@@ -96,7 +96,13 @@ public class KujiExecutor {
             isLast = true;
 
             // Give last shot if present
-            Optional.ofNullable(crate.getLastShot()).ifPresent(lastShot -> lastShot.give(player));
+            Optional.ofNullable(player.getParent()).ifPresent(playerEntity -> {
+                if (calRemainInvSize(playerEntity) == 0) {
+                    playerEntity.sendMessage(MsgUtil.prefixedColorMsg(IkaKuji.getInstance().getLocale().getMessages().getLastRewardFailMsg(), crate.getDisplayName()), playerEntity.getUUID());
+                } else {
+                    Optional.ofNullable(crate.getLastShot()).ifPresent(lastShot -> lastShot.give(player));
+                }
+            });
 
             if (!crate.isOneRound()) {
                 playerDrawn.clear();
