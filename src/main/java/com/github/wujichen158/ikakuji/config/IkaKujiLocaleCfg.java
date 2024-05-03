@@ -39,6 +39,7 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
         private String insufficientInvSizeMsg = "&fYou don't have enough inventory space to receive the reward";
         private String noAvailableRwdMsg = "&fThis crate has no available rewards!";
         private String openCrateForPlayerMsg = "&fSuccessfully open crate %s for %s";
+        private String lastRewardFailMsg = "&fFailed to deliver the last-shot reward of crate %s, please contact admin to deliver again";
         private String rewardRemainCount = "&f%d remaining";
 
         public String getPrefix() {
@@ -75,6 +76,10 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
 
         public String getOpenCrateForPlayerMsg() {
             return openCrateForPlayerMsg;
+        }
+
+        public String getLastRewardFailMsg() {
+            return lastRewardFailMsg;
         }
 
         public String getRewardRemainCount() {
@@ -114,7 +119,7 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
         private String listFooter = "&6——————————————————————————————";
         private String cmdTitle = "&6————————Ika Kuji commands————————";
         private List<String> cmds = Lists.newArrayList(
-                "&f /kuji give &e<key/crate> <player> <crate_name>&f: Give player a specified crate/key. Crate can only be item",
+                "&f /kuji give &e<key/crate> <player> <crate_name>&f: &6Give player a specified crate/key. Crate can only be item",
                 "&f /kuji list &e[page_number]&f: &6List all kujis you're currently running. The page number will be 1 if you don't specify it",
                 "&f /kuji open &e<player> <crate_name>&f: &6Open a specified kuji for the target player if the player satisfies the condition of that kuji",
                 "&f /kuji reload&f: &6Reload Ika Kuji to apply all new changes"

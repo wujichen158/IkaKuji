@@ -44,9 +44,6 @@ public class IkaKuji {
 
     public IkaKuji() {
         INSTANCE = this;
-
-        MinecraftForge.EVENT_BUS.register(new KujiTriggerListener());
-        MinecraftForge.EVENT_BUS.register(new PlayerIOListener());
         MinecraftForge.EVENT_BUS.register(this);
     }
 
@@ -90,11 +87,14 @@ public class IkaKuji {
     @SubscribeEvent
     public void preInit(final FMLServerAboutToStartEvent event) {
         GuiFactory.setPlatformFactory(new ForgeGuiFactory());
+
         loadConfig();
     }
 
     @SubscribeEvent
     public void init(final FMLServerStartingEvent event) {
+        MinecraftForge.EVENT_BUS.register(new KujiTriggerListener());
+        MinecraftForge.EVENT_BUS.register(new PlayerIOListener());
     }
 
     @SubscribeEvent

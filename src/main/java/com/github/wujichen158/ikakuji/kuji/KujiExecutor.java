@@ -152,7 +152,7 @@ public class KujiExecutor {
             StringBuilder builder = new StringBuilder();
             int finalRewardsSize = finalRewards.size();
             for (int i = 0; i < finalRewardsSize; i++) {
-                builder.append(String.format("%s-%s-%s %02d:%02d:%02d: %s\n",
+                builder.append(String.format("%s-%s-%s %02d:%02d:%02d: %s",
                         now.getYear(), now.getMonthValue(), now.getDayOfMonth(),
                         now.getHour(), now.getMinute(), now.getSecond(),
                         logs.getWinRewardLog()
@@ -236,11 +236,6 @@ public class KujiExecutor {
 
 
     public static void executeKujiLogic(PlayerInteractEvent event, KujiObj.Crate crate, boolean itemCrate) {
-        // Must check here, or it'll execute twice
-        if (event.getHand() != Hand.MAIN_HAND) {
-            return;
-        }
-
         PlayerEntity player = event.getPlayer();
         AtomicInteger minCount = new AtomicInteger(itemCrate ? event.getItemStack().getCount() : -1);
         if (executeKujiLogic(player, crate, minCount)) {
@@ -314,11 +309,7 @@ public class KujiExecutor {
         // Check and cal available inventory size
         int invSize = 0;
         if (crate.isCheckInvBefore()) {
-            for (ItemStack itemstack : player.inventory.items) {
-                if (itemstack.isEmpty()) {
-                    invSize++;
-                }
-            }
+            invSize = calRemainInvSize(player);
             if (invSize == 0) {
                 player.sendMessage(MsgUtil.prefixedColorMsg(messages.getInsufficientInvSizeMsg()), player.getUUID());
                 return false;
@@ -376,6 +367,16 @@ public class KujiExecutor {
             KujiGuiManager.open(crate, envyPlayer, playerDrawn, rewards);
         }
         return true;
+    }
+
+    private static int calRemainInvSize(PlayerEntity player) {
+        int invSize = 0;
+        for (ItemStack itemstack : player.inventory.items) {
+            if (itemstack.isEmpty()) {
+                invSize++;
+            }
+        }
+        return invSize;
     }
 
     private static boolean checkAndTakeKey(ExtendedConfigItem crateKey, PlayerEntity player) {
@@ -452,14 +453,15 @@ public class KujiExecutor {
         double randomWeight = Reference.RANDOM.nextDouble() * totalWeight;
         double cumulativeWeight = 0.0;
         for (Pair<KujiObj.Reward, Double> weightedReward : availableRewards) {
-            if (cumulativeWeight < randomWeight && cumulativeWeight + weightedReward.getSecond() >= randomWeight) {
+            double weight = weightedReward.getSecond();
+            if (cumulativeWeight < randomWeight && cumulativeWeight + weight >= randomWeight) {
                 KujiObj.Reward reward = weightedReward.getFirst();
                 playerDrawn.add(reward.getId());
                 rewards.add(0, reward);
             } else {
                 rewards.add(weightedReward.getFirst());
             }
-            cumulativeWeight += weightedReward.getSecond();
+            cumulativeWeight += weight;
         }
         return rewards;
     }

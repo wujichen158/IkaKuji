@@ -14,17 +14,23 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class CrateFactory {
 
     private static final Map<String, KujiObj.Crate> LOADED_CRATES = Maps.newHashMap();
-    private static List<String> crateNameList;
-
     private static final Map<KujiCrateType.ItemWrapper, String> ITEM_CRATE_MAP = Maps.newHashMap();
     private static final Map<String, List<ItemStack>> CRATE_ITEMS_MAP = Maps.newHashMap();
     private static final Map<String, Map<Triple<Integer, Integer, Integer>, String>> WORLD_POS_CRATE_MAP = Maps.newHashMap();
     private static final Map<String, String> ENTITY_CRATE_MAP = Maps.newHashMap();
+    private static List<String> crateNameList;
+
+    private CrateFactory() {
+        throw new UnsupportedOperationException("Static factory");
+    }
 
     private static void registerItemCrate(ItemStack itemStack, String crateName) {
         KujiCrateType.ItemWrapper itemWrapper = new KujiCrateType.ItemWrapper(itemStack);
@@ -47,10 +53,10 @@ public class CrateFactory {
         switch (crate.getCrateType()) {
             case item:
                 try {
-                    Optional.ofNullable(node.node("type-data").getList(ExtendedConfigItem.class)).ifPresent(extendedConfigItems ->
-                            extendedConfigItems.forEach(extendedConfigItem -> {
-                                CrateFactory.registerItemCrate(UtilConfigItem.fromConfigItem(extendedConfigItem), crateName);
-                            }));
+                    Optional.ofNullable(node.node("type-data").getList(ExtendedConfigItem.class)).ifPresent(extendedConfigItems -> {
+                        extendedConfigItems.forEach(extendedConfigItem ->
+                                CrateFactory.registerItemCrate(UtilConfigItem.fromConfigItem(extendedConfigItem), crateName));
+                    });
                 } catch (SerializationException ignored) {
                     IkaKuji.LOGGER.warn(String.format("Item Kuji info %s has something wrong, please have a check.", crateName));
                 }
@@ -65,19 +71,13 @@ public class CrateFactory {
                 }
                 break;
             case entity:
-                crate.getTypeData().forEach(elem -> {
-                    boolean valid = false;
-                    for (String k : elem.keySet()) {
-                        if ("type".equals(k)) {
-                            CrateFactory.registerEntityCrate(elem.get(k), crateName);
-                            valid = true;
-                            break;
-                        }
-                    }
-                    if (!valid) {
-                        IkaKuji.LOGGER.warn(String.format("Entity Kuji info %s has something wrong, please have a check.", crateName));
-                    }
-                });
+                try {
+                    Optional.ofNullable(node.node("type-data").getList(KujiCrateType.EntityCrate.class)).ifPresent(entities ->
+                            entities.forEach(entity ->
+                                    CrateFactory.registerEntityCrate(entity.getName(), crateName)));
+                } catch (SerializationException ignored) {
+                    IkaKuji.LOGGER.warn(String.format("Entity Kuji info %s has something wrong, please have a check.", crateName));
+                }
                 break;
             default:
         }
@@ -99,10 +99,6 @@ public class CrateFactory {
         return LOADED_CRATES.getOrDefault(ENTITY_CRATE_MAP.getOrDefault(entityName, null), null);
     }
 
-    private CrateFactory() {
-        throw new UnsupportedOperationException("Static factory");
-    }
-
     public static void register(ConfigurationNode node, KujiObj.Crate crate) {
         LOADED_CRATES.put(crate.getDisplayName(), crate);
         registerResponseCrate(node, crate);
@@ -118,7 +114,6 @@ public class CrateFactory {
 
     public static void clear() {
         LOADED_CRATES.clear();
-        crateNameList.clear();
 
         ITEM_CRATE_MAP.clear();
         CRATE_ITEMS_MAP.clear();
