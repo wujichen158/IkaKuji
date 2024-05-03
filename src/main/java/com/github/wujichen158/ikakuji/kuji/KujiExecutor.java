@@ -473,13 +473,15 @@ public class KujiExecutor {
             double randomWeight = Reference.RANDOM.nextDouble() * totalWeight;
             double cumulativeWeight = 0.0;
             for (Pair<KujiObj.Reward, Double> weightedReward : availableRewards) {
-                if (cumulativeWeight >= randomWeight) {
+                double weight = weightedReward.getSecond();
+                // This condition guarantee the last reward would be delivered
+                if (cumulativeWeight < randomWeight && cumulativeWeight + weight >= randomWeight) {
                     KujiObj.Reward reward = weightedReward.getFirst();
                     playerDrawn.add(reward.getId());
-                    rewards.add(0, reward);
+                    rewards.add(reward);
                     break;
                 }
-                cumulativeWeight += weightedReward.getSecond();
+                cumulativeWeight += weight;
             }
         }
         return rewards;
