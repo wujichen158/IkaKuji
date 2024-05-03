@@ -39,7 +39,7 @@ public class IkaKuji {
 
     private final ForgePlayerManager playerManager = new ForgePlayerManager();
     private final ForgeCommandFactory commandFactory = new ForgeCommandFactory(ForgeAnnotationCommandParser::new, this.playerManager);
-    private IkaKujiCfg config;
+//    private IkaKujiCfg config;
     private IkaKujiLocaleCfg locale;
 
     public IkaKuji() {
@@ -57,7 +57,7 @@ public class IkaKuji {
     public void loadConfig() {
         createDirsIfNotExist();
         try {
-            this.config = YamlConfigFactory.getInstance(IkaKujiCfg.class);
+//            this.config = YamlConfigFactory.getInstance(IkaKujiCfg.class);
             this.locale = YamlConfigFactory.getInstance(IkaKujiLocaleCfg.class);
 
             CfgPostProcessUtil.loadAllCrates();
@@ -116,9 +116,9 @@ public class IkaKuji {
         return commandFactory;
     }
 
-    public IkaKujiCfg getConfig() {
-        return config;
-    }
+//    public IkaKujiCfg getConfig() {
+//        return config;
+//    }
 
     public IkaKujiLocaleCfg getLocale() {
         return locale;

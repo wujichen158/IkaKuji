@@ -1,7 +1,5 @@
 package com.github.wujichen158.ikakuji.listener;
 
-import com.envyful.api.forge.world.UtilWorld;
-import com.github.wujichen158.ikakuji.IkaKuji;
 import com.github.wujichen158.ikakuji.util.PlayerKujiFactory;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

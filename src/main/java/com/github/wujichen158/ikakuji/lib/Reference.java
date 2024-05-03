@@ -1,9 +1,6 @@
 package com.github.wujichen158.ikakuji.lib;
 
-import com.google.common.collect.Sets;
-
 import java.util.Random;
-import java.util.Set;
 
 public class Reference {
     public static final String MOD_ID = "ikakuji";

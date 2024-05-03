@@ -1,5 +1,6 @@
 package com.github.wujichen158.ikakuji.kuji;
 
+@Deprecated
 public enum EnumRank {
     // Rank enums
 

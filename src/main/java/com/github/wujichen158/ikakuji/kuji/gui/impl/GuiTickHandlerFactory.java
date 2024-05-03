@@ -12,7 +12,6 @@ import com.github.wujichen158.ikakuji.kuji.gui.IGuiTickHandler;
 import com.github.wujichen158.ikakuji.lib.Reference;
 import com.google.common.collect.Lists;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;

@@ -13,25 +13,16 @@ import com.github.wujichen158.ikakuji.IkaKuji;
 import com.github.wujichen158.ikakuji.command.completion.CrateDeliverCompleter;
 import com.github.wujichen158.ikakuji.command.completion.CrateNameCompleter;
 import com.github.wujichen158.ikakuji.config.IkaKujiLocaleCfg;
-import com.github.wujichen158.ikakuji.config.KujiCrateType;
 import com.github.wujichen158.ikakuji.kuji.EnumCrateType;
 import com.github.wujichen158.ikakuji.lib.PermissionNodes;
 import com.github.wujichen158.ikakuji.util.CrateFactory;
 import com.github.wujichen158.ikakuji.util.MsgUtil;
-import com.google.common.collect.BiMap;
 import com.google.common.collect.Lists;
 import net.minecraft.command.ICommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.registries.ForgeRegistries;
-import org.spongepowered.configurate.ConfigurateException;
-import org.spongepowered.configurate.ConfigurationNode;
-import org.spongepowered.configurate.serialize.SerializationException;
-import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Command(
