@@ -1,5 +1,6 @@
 package com.github.wujichen158.ikakuji.config;
 
+import com.github.wujichen158.ikakuji.util.ItemUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
@@ -52,33 +53,6 @@ public class KujiCrateType {
             return itemStack;
         }
 
-        // No count comparison
-        private boolean equalsWithPureTag(ItemStack other) {
-            if (this.itemStack.isEmpty()) {
-                return other.isEmpty();
-            }
-            return !other.isEmpty() && this.itemStack.getItem() == other.getItem() && tagMatches(other);
-        }
-
-        private boolean tagMatches(ItemStack other) {
-            boolean thisTagEmpty = this.itemStack.getTag() == null || this.itemStack.getTag().isEmpty();
-            boolean otherTagEmpty = other.getTag() == null || other.getTag().isEmpty();
-            if (thisTagEmpty != otherTagEmpty) {
-                return false;
-            }
-            if (!thisTagEmpty) {
-                return getPureTag(this.itemStack.getTag()).equals(getPureTag(other.getTag())) && this.itemStack.areCapsCompatible(other);
-            }
-            return true;
-        }
-
-        public CompoundNBT getPureTag(CompoundNBT tag) {
-            if (tag != null) {
-                tag.remove("display");
-            }
-            return tag;
-        }
-
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {
@@ -88,7 +62,7 @@ public class KujiCrateType {
                 return false;
             }
             ItemWrapper other = (ItemWrapper) obj;
-            return equalsWithPureTag(other.getItemStack());
+            return ItemUtil.equalsWithPureTag(this.itemStack, other.getItemStack());
         }
 
         /**
@@ -98,12 +72,7 @@ public class KujiCrateType {
          */
         @Override
         public int hashCode() {
-            return Objects.hash(this.itemStack.getItem(), Optional.ofNullable(getPureTag(this.itemStack.getTag())).filter(CompoundNBT::isEmpty).orElse(null));
-        }
-
-        @Override
-        public String toString() {
-            return String.format("%s, %s, %s", this.itemStack.getItem().getRegistryName(), Optional.ofNullable(this.itemStack.getShareTag()).map(CompoundNBT::toString).orElse("null"), Optional.ofNullable(this.itemStack.getTag()).map(CompoundNBT::toString).orElse("null"));
+            return Objects.hash(this.itemStack.getItem(), Optional.ofNullable(ItemUtil.getPureTag(this.itemStack.getTag())).filter(CompoundNBT::isEmpty).orElse(null));
         }
     }
 }
