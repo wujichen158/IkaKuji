@@ -4,6 +4,7 @@ import com.envyful.api.command.annotate.Command;
 import com.envyful.api.command.annotate.executor.CommandProcessor;
 import com.envyful.api.command.annotate.executor.Sender;
 import com.envyful.api.command.annotate.permission.Permissible;
+import com.envyful.api.forge.player.ForgeEnvyPlayer;
 import com.github.wujichen158.ikakuji.IkaKuji;
 import com.github.wujichen158.ikakuji.config.IkaKujiLocaleCfg;
 import com.github.wujichen158.ikakuji.lib.PermissionNodes;
@@ -22,14 +23,25 @@ import java.util.Optional;
 public class ListCmd {
 
     @CommandProcessor
-    public void run(@Sender ServerPlayerEntity player, Integer arg) {
+    public void run(@Sender ServerPlayerEntity player, String[] args) {
+        ForgeEnvyPlayer envyPlayer = IkaKuji.getInstance().getPlayerManager().getPlayer(player);
         Optional.ofNullable(PlayerKujiFactory.get(player.getUUID())).ifPresent(playerData -> {
-            int onePageSize = 10;
-            int page = Optional.ofNullable(arg).map(arg1 -> arg1 - 1).orElse(0);
-            List<String> pagedCrateList = playerData.getAvailableCrates().subList(page, page + onePageSize);
+            int onePageSize = 8;
+            int page = 0;
+            if (args.length > 0) {
+                try {
+                    page = Integer.parseInt(args[0]) - 1;
+                } catch (NumberFormatException ignored) {
+                }
+            }
+
+            boolean indexStartOutBound = page * onePageSize >= playerData.getAvailableCrates().size();
+            int indexStart = indexStartOutBound ? 0 : page * onePageSize;
+            int indexEnd = indexStartOutBound ? 0 : Math.min(playerData.getAvailableCrates().size(), page * onePageSize + onePageSize);
+            List<String> pagedCrateList = playerData.getAvailableCrates().subList(indexStart, indexEnd);
             IkaKujiLocaleCfg.Commands commands = IkaKuji.getInstance().getLocale().getCommands();
 
-            // style
+            // in style
             player.sendMessage(MsgUtil.colorMsg(commands.getListTitle()), player.getUUID());
             pagedCrateList.forEach(crateName ->
                     player.sendMessage(MsgUtil.colorMsg(commands.getListElemPrefix(), crateName), player.getUUID()));
