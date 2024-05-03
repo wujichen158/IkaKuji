@@ -1,5 +1,6 @@
 ![Ika Kuji Logo](logo.png)
 
+<img src="https://img.shields.io/badge/闲鱼同名小铺-鱿一番动漫周边-FFE60F" alt="闲鱼小铺">
 <a href="https://shop365119586.taobao.com/"><img src="https://img.shields.io/badge/淘宝同名店铺-鱿一番动漫周边-FF6200" alt="淘宝店铺"></a>
 <img src="https://img.shields.io/badge/支持-MC%201.16.5%20&%201.20.2-33ff99" alt="支持版本">
 
