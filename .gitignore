@@ -22,6 +22,7 @@ eclipse
 run
 libs
 imgs
+logo.psd
 
 # Files from Forge MDK
 forge*changelog.txt
