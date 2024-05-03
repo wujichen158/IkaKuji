@@ -4,10 +4,9 @@ import com.github.wujichen158.ikakuji.config.KujiObj;
 import com.github.wujichen158.ikakuji.kuji.KujiExecutor;
 import com.github.wujichen158.ikakuji.util.CrateFactory;
 import net.minecraft.util.ActionResultType;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.Optional;
@@ -18,18 +17,30 @@ import java.util.Optional;
  * @author wujichen158
  */
 public class KujiTriggerListener {
-
-    //TODO: Support permissions
-
     @SubscribeEvent
     public void onPlayerRightClick(PlayerInteractEvent.RightClickItem event) {
-        this.handleItemInteract(event);
+        // Must check in the beginning, or it'll execute twice
+        if (event.getHand() != Hand.MAIN_HAND) {
+            return;
+        }
+        KujiObj.Crate crate = CrateFactory.tryGetItemCrate(event.getItemStack());
+        if (Optional.ofNullable(crate).isEmpty()) {
+            return;
+        }
+
+        event.setCanceled(true);
+        event.setCancellationResult(ActionResultType.FAIL);
+
+        KujiExecutor.executeKujiLogic(event, crate, true);
     }
 
     @SubscribeEvent
     public void onPlayerRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        this.handleItemInteract(event);
-        if (!event.isCanceled()) {
+        if (event.getHand() != Hand.MAIN_HAND) {
+            return;
+        }
+
+        if (!isItemCrate(event)) {
             BlockPos blockPos = event.getHitVec().getBlockPos();
             KujiObj.Crate crate = CrateFactory.tryGetWorldPosCrate(event.getPlayer().level,
                     blockPos.getX(),
@@ -40,7 +51,7 @@ public class KujiTriggerListener {
             }
 
             event.setCanceled(true);
-            event.setUseBlock(Event.Result.DENY);
+            event.setCancellationResult(ActionResultType.FAIL);
 
             KujiExecutor.executeKujiLogic(event, crate, false);
         }
@@ -48,30 +59,32 @@ public class KujiTriggerListener {
 
     @SubscribeEvent
     public void onPlayerRightClickEntity(PlayerInteractEvent.EntityInteractSpecific event) {
-        this.handleItemInteract(event);
-        if (!event.isCanceled()) {
+        if (event.getHand() != Hand.MAIN_HAND) {
+            return;
+        }
+
+        if (!isItemCrate(event)) {
             KujiObj.Crate crate = CrateFactory.tryGetEntityCrate(event.getTarget().getName().getString());
             if (Optional.ofNullable(crate).isEmpty()) {
                 return;
             }
 
             event.setCanceled(true);
-            //TODO: Has doubt on this:
             event.setCancellationResult(ActionResultType.FAIL);
 
             KujiExecutor.executeKujiLogic(event, crate, false);
         }
     }
 
-    private void handleItemInteract(PlayerInteractEvent event) {
+    private boolean isItemCrate(PlayerInteractEvent event) {
         KujiObj.Crate crate = CrateFactory.tryGetItemCrate(event.getItemStack());
         if (Optional.ofNullable(crate).isEmpty()) {
-            return;
+            return false;
         }
 
         event.setCanceled(true);
         event.setCancellationResult(ActionResultType.FAIL);
 
-        KujiExecutor.executeKujiLogic(event, crate, true);
+        return true;
     }
 }
