@@ -434,7 +434,7 @@ public class KujiExecutor {
             int th = playerDrawn.size() + 1;
             double perRewardWeight = (double) (Optional.ofNullable(crate.getWeightOverrides())
                     .map(weightOverrides -> weightOverrides.get(th))
-                    .map(crateWeightOverrideMap -> crateWeightOverrideMap.get(crate.getDisplayName()))
+                    .map(crateWeightOverrideMap -> crateWeightOverrideMap.get(reward.getId()))
                     .orElse(reward.getTotalWeight())) / reward.getAmountPerKuji();
             weightRes += perRewardWeight * availableAmount;
             for (int i = 0; i < availableAmount; i++) {
