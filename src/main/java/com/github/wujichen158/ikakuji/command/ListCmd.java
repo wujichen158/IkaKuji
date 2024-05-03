@@ -4,7 +4,6 @@ import com.envyful.api.command.annotate.Command;
 import com.envyful.api.command.annotate.executor.CommandProcessor;
 import com.envyful.api.command.annotate.executor.Sender;
 import com.envyful.api.command.annotate.permission.Permissible;
-import com.envyful.api.forge.player.ForgeEnvyPlayer;
 import com.github.wujichen158.ikakuji.IkaKuji;
 import com.github.wujichen158.ikakuji.config.IkaKujiLocaleCfg;
 import com.github.wujichen158.ikakuji.lib.PermissionNodes;
@@ -24,7 +23,6 @@ public class ListCmd {
 
     @CommandProcessor
     public void run(@Sender ServerPlayerEntity player, String[] args) {
-        ForgeEnvyPlayer envyPlayer = IkaKuji.getInstance().getPlayerManager().getPlayer(player);
         Optional.ofNullable(PlayerKujiFactory.get(player.getUUID())).ifPresent(playerData -> {
             int onePageSize = 8;
             int page = 0;
