@@ -59,6 +59,7 @@ public class KujiObj {
         private boolean checkInvBefore = true;
         private double chance = 100d;
         private Reward consolationReward;
+        private Map<Integer, Map<String, Integer>> weightOverrides;
         private List<String> preCrates;
 
         public String getDisplayName() {
@@ -193,6 +194,10 @@ public class KujiObj {
 
         public Reward getConsolationReward() {
             return consolationReward;
+        }
+
+        public Map<Integer, Map<String, Integer>> getWeightOverrides() {
+            return weightOverrides;
         }
 
         public List<String> getPreCrates() {

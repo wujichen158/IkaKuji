@@ -23,7 +23,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.StringNBT;
-import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -428,16 +427,21 @@ public class KujiExecutor {
 
     private static double getWeightWithAvailableRewards(List<Pair<KujiObj.Reward, Double>> availableRewards, List<String> playerDrawn, KujiObj.Crate crate) {
         Map<String, Long> drawnMap = playerDrawn.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-        double totalWeight = 0;
+        double weightRes = 0;
         for (KujiObj.Reward reward : crate.getRewards()) {
             int availableAmount = getAvailableAmount(reward.getAmountPerKuji(), drawnMap.get(reward.getId()));
-            double rewardWeight = (double) reward.getTotalWeight() / reward.getAmountPerKuji();
-            totalWeight += rewardWeight * availableAmount;
+            // Drawing is done playerDrawn.size() times, so currently is (playerDrawn.size() + 1)th drawing
+            int th = playerDrawn.size() + 1;
+            double perRewardWeight = (double) (Optional.ofNullable(crate.getWeightOverrides())
+                    .map(weightOverrides -> weightOverrides.get(th))
+                    .map(crateWeightOverrideMap -> crateWeightOverrideMap.get(crate.getDisplayName()))
+                    .orElse(reward.getTotalWeight())) / reward.getAmountPerKuji();
+            weightRes += perRewardWeight * availableAmount;
             for (int i = 0; i < availableAmount; i++) {
-                availableRewards.add(new Pair<>(reward, rewardWeight));
+                availableRewards.add(new Pair<>(reward, perRewardWeight));
             }
         }
-        return totalWeight;
+        return weightRes;
     }
 
     /**
