@@ -4,6 +4,7 @@ import com.envyful.api.concurrency.UtilConcurrency;
 import com.envyful.api.config.type.ExtendedConfigItem;
 import com.envyful.api.forge.chat.UtilChatColour;
 import com.envyful.api.forge.config.ConfigSound;
+import com.envyful.api.forge.config.UtilConfigItem;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
 import com.envyful.api.text.Placeholder;
 import com.github.wujichen158.ikakuji.IkaKuji;
@@ -13,6 +14,7 @@ import com.github.wujichen158.ikakuji.lib.PermissionNodes;
 import com.github.wujichen158.ikakuji.lib.Placeholders;
 import com.github.wujichen158.ikakuji.lib.Reference;
 import com.github.wujichen158.ikakuji.util.CrateFactory;
+import com.github.wujichen158.ikakuji.util.ItemUtil;
 import com.github.wujichen158.ikakuji.util.MsgUtil;
 import com.github.wujichen158.ikakuji.util.PlayerKujiFactory;
 import com.google.common.collect.Lists;
@@ -380,12 +382,8 @@ public class KujiExecutor {
 
     private static boolean checkAndTakeKey(ExtendedConfigItem crateKey, PlayerEntity player) {
         if (Optional.ofNullable(crateKey).isPresent()) {
-            String crateKeyName = crateKey.getType();
-
             for (ItemStack invItem : player.inventory.items) {
-                if (Optional.ofNullable(invItem.getItem().getRegistryName())
-                        .map(ResourceLocation::toString)
-                        .filter(regName -> regName.equals(crateKeyName)).isPresent()) {
+                if (ItemUtil.equalsWithPureTag(invItem, UtilConfigItem.fromConfigItem(crateKey))) {
                     //Consume key
                     if (!player.isCreative()) {
                         if (crateKey.getAmount() <= invItem.getCount()) {
@@ -404,12 +402,8 @@ public class KujiExecutor {
 
     private static int checkAndTakeKeys(ExtendedConfigItem crateKey, PlayerEntity player, int minCount) {
         if (Optional.ofNullable(crateKey).isPresent()) {
-            String crateKeyName = crateKey.getType();
-
             for (ItemStack invItem : player.inventory.items) {
-                if (Optional.ofNullable(invItem.getItem().getRegistryName())
-                        .map(ResourceLocation::toString)
-                        .filter(regName -> regName.equals(crateKeyName)).isPresent()) {
+                if (ItemUtil.equalsWithPureTag(invItem, UtilConfigItem.fromConfigItem(crateKey))) {
                     //Consume keys
                     if (!player.isCreative()) {
                         int maxKeyCount = invItem.getCount() / crateKey.getAmount();
