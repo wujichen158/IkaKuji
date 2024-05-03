@@ -1,0 +1,128 @@
+buildscript {
+    repositories {
+        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+        maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter' }
+        maven { url 'https://plugins.gradle.org/m2/' }
+        maven { url 'https://files.minecraftforge.net/maven' }
+        maven { url 'https://maven.minecraftforge.net/' }
+        mavenCentral()
+        flatDir {
+            dirs 'libs'
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
+        classpath "com.github.jengelman.gradle.plugins:shadow:4.0.4"
+    }
+}
+
+allprojects {
+    repositories {
+        maven { url = "https://jitpack.io" }
+        maven { url = "https://maven.envyware.co.uk/releases" }
+        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+        maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter' }
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: "com.github.johnrengelman.shadow"
+
+version = '1.12.2-1.0.0'
+group = 'com.github.wujichen158.ikakuji'
+archivesBaseName = 'IkaKuji'
+
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+
+minecraft {
+    mappings channel: 'snapshot', version: '20171003-1.12'
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2860'
+
+    //shadow 'mysql:mysql-connector-java:8.0.+'
+
+    //Can only use 4.0.0
+    // 3.7.0 > && < 4.0.0 has the same problem: GUI will crash
+    // =< 3.7.0: doesn't have Pane#set and tickHandler
+    // > 4.0.0: can't compile since Java language level incompatibility
+//    shadow (group: 'com.envyful.api', name: 'commons', version: '4.0.0')
+    shadow group: 'com.github.Pixelmon-Development.API', name: 'commons', version: '4.0.0'
+    shadow group: 'com.github.Pixelmon-Development.API', name: 'forge', version: '4.0.0'
+}
+
+jar {
+    manifest {
+        attributes([
+                "Specification-Title"     : "ikakuji",
+                "Specification-Vendor"    : "ikakujisareus",
+                "Specification-Version"   : "1", // We are version 1 of ourselves
+                "Implementation-Title"    : project.name,
+                "Implementation-Version"  : "${version}",
+                "Implementation-Vendor"   : "ikakujisareus",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+}
+
+shadowJar {
+
+    configurations = [project.configurations.shadow]
+
+//    relocate('com.envyful.api', "${group}.shade.envy.api")
+//    relocate('com.google.gson', "${group}.shade.gson")
+//    relocate('com.zaxxer', "${group}.shade.hikari")
+//    relocate('io.leangen.geantyref', "${group}.shade.geantyref")
+//    relocate('org.slf4j', "${group}.shade.slf4j")
+//    relocate('org.spongepowered.configurate', "${group}.shade.configurate")
+//    relocate('org.yaml.snakeyaml', "${group}.shade.snakeyaml")
+//    relocate('org.checkerframework', "${group}.shade.checkerframework")
+
+    relocate('com.envyful.api', 'com.github.wujichen158.ikakuji.shade.envy.api')
+    relocate('com.google.gson', 'com.github.wujichen158.ikakuji.shade.gson')
+    relocate('com.zaxxer', 'com.github.wujichen158.ikakuji.shade.hikari')
+    relocate('io.leangen.geantyref', 'com.github.wujichen158.ikakuji.shade.geantyref')
+    relocate('org.slf4j', 'com.github.wujichen158.ikakuji.shade.slf4j')
+    relocate('org.spongepowered.configurate', 'com.github.wujichen158.ikakuji.shade.configurate')
+    relocate('org.yaml.snakeyaml', 'com.github.wujichen158.ikakuji.shade.snakeyaml')
+    relocate('org.checkerframework', 'com.github.wujichen158.ikakuji.shade.checkerframework')
+
+    //new
+    relocate('org.bstats', "com.github.wujichen158.ikakuji.shade.bstats")
+    relocate('io.netty', "com.github.wujichen158.ikakuji.shade.netty")
+    relocate('io.lettuce', "com.github.wujichen158.ikakuji.shade.lettuce")
+    relocate('com.cronutils', "com.github.wujichen158.ikakuji.shade.cronutils")
+    relocate('com.sun.el', "com.github.wujichen158.ikakuji.shade.sun.el")
+    relocate('org.reactivestreams', "com.github.wujichen158.ikakuji.shade.reactivestreams")
+    relocate('reactor', "com.github.wujichen158.ikakuji.shade.reactor")
+    relocate('com.mysql', "com.github.wujichen158.ikakuji.shade.mysql")
+
+    exclude "com/google/**"
+    exclude "javax/**"
+    exclude "**/module-info.class"
+    exclude "META-INF/versions/9/**"
+    exclude "META-INF/native-image/**"
+    exclude "META-INF/services/**"
+}
+
+//Very good dependency dealing method, makes the 4.0.0 envyAPI spin
+configurations.configureEach {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'net.minecraftforge' && details.requested.name == 'forge') {
+            details.useVersion '1.12.2-14.23.5.2860_mapped_snapshot_20171003-1.12'
+        }
+    }
+}
+
+reobf {
+    shadowJar {
+        classpath = sourceSets.main.compileClasspath
+    }
+}
+
+jar.finalizedBy('reobfJar')
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
