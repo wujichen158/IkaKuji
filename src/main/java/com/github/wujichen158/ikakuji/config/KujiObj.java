@@ -41,6 +41,7 @@ public class KujiObj {
         private ExtendedConfigItem placeholderButton;
 
         private EnumGuiPattern guiChangePattern;
+        private ExtendedConfigItem coverItem;
         /**
          * Times are all in second
          */
@@ -49,8 +50,6 @@ public class KujiObj {
         private double spinDuration = 10d;
         private int finalRewardPosition = 22;
         private ConfigSound rollSound;
-
-        private ExtendedConfigItem coverItem;
         private List<ExtendedConfigItem> indicators;
 
         private int limitPerDraw = 0;
@@ -148,6 +147,10 @@ public class KujiObj {
             return guiChangePattern;
         }
 
+        public ExtendedConfigItem getCoverItem() {
+            return coverItem;
+        }
+
         public double getInitialDelay() {
             return initialDelay;
         }
@@ -162,10 +165,6 @@ public class KujiObj {
 
         public ConfigSound getRollSound() {
             return rollSound;
-        }
-
-        public ExtendedConfigItem getCoverItem() {
-            return coverItem;
         }
 
         public List<ExtendedConfigItem> getIndicators() {
