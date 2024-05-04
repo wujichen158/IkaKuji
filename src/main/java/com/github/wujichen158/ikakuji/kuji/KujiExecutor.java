@@ -25,7 +25,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.StringNBT;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
@@ -104,10 +103,6 @@ public class KujiExecutor {
                     Optional.ofNullable(crate.getLastShot()).ifPresent(lastShot -> lastShot.give(player));
                 }
             });
-
-            if (!crate.isOneRound()) {
-                playerDrawn.clear();
-            }
         }
         PlayerKujiFactory.updatePlayerDrawn(playerDrawn, player.getUniqueId(), crate.getDisplayName());
         return isLast;
@@ -297,9 +292,14 @@ public class KujiExecutor {
         }
 
         // Check full
-        if (KujiExecutor.isFullDrawn(playerDrawn, crate) && crate.isOneRound()) {
-            player.sendMessage(MsgUtil.prefixedColorMsg(messages.getOneRoundMsg()), player.getUUID());
-            return false;
+        if (KujiExecutor.isFullDrawn(playerDrawn, crate)) {
+            if (crate.isOneRound()) {
+                player.sendMessage(MsgUtil.prefixedColorMsg(messages.getOneRoundMsg()), player.getUUID());
+                return false;
+            } else {
+                // Clear here can avoid pre-checking issue
+                playerDrawn.clear();
+            }
         }
 
 
