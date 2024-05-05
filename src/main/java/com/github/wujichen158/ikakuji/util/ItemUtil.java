@@ -20,22 +20,27 @@ public class ItemUtil {
     }
 
     private static boolean tagMatches(ItemStack here, ItemStack other) {
-        boolean thisTagEmpty = here.getTag() == null || here.getTag().isEmpty();
-        boolean otherTagEmpty = other.getTag() == null || other.getTag().isEmpty();
+        CompoundTag thisPureTag = getPureTag(here.getTag());
+        CompoundTag otherPureTag = getPureTag(other.getTag());
+        boolean thisTagEmpty = thisPureTag == null || thisPureTag.isEmpty();
+        boolean otherTagEmpty = otherPureTag == null || otherPureTag.isEmpty();
         if (thisTagEmpty != otherTagEmpty) {
             return false;
         }
         if (!thisTagEmpty) {
-            return getPureTag(here.getTag()).equals(getPureTag(other.getTag())) && here.areCapsCompatible(other);
+            return thisPureTag.equals(otherPureTag) && here.areCapsCompatible(other);
         }
         return true;
     }
 
     public static CompoundTag getPureTag(CompoundTag tag) {
         if (tag != null) {
-            tag.remove("display");
+            CompoundTag newTags = tag.copy();
+            newTags.remove("display");
+            newTags.remove("RepairCost");
+            return newTags;
         }
-        return tag;
+        return null;
     }
 
 }
