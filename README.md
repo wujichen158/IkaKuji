@@ -6,9 +6,9 @@
 
 # 鱿一番——Ika Kuji
 
-_Minecraft一番赏抽奖mod_
+<div style="text-align: center; color: #696969; font-style: italic">——“一番赏什么的抽不中的哟，我是不会上当的哟”</div>
 
-**鱿一番** 是一款 Minecraft 服务端 mod，灵感来源于日本的一番赏活动，可以让玩家体验独特的抽奖功能。通过本 mod，玩家可以进行多次的、多轮的不重复抽奖，以赢取各种奖品。本 mod 更提供概率覆写、最终奖等独特功能配置
+**鱿一番** 是一款 Minecraft 一番赏抽奖服务端 mod，灵感来源于日本的一番赏活动，可以让玩家体验独特的抽奖功能。通过本 mod，玩家可以进行多次的、多轮的不重复抽奖，以赢取各种奖品。本 mod 更提供阶段性概率覆写、最终奖等独特功能配置
 
 ## 特性
 
@@ -27,7 +27,7 @@ _Minecraft一番赏抽奖mod_
 
 ## 依赖
 
-本 mod 基于 [EnvyAPI](https://github.com/EnvyWare/API) 进行开发，需要服务端安装 Forge
+本 mod 基于 [EnvyAPI](https://github.com/EnvyWare/API) 进行开发，需要服务端安装 Forge。EnvyAPI 已被集成至 mod 中，无需额外安装
 
 它支持以下的 Minecraft 版本：
 
