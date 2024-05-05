@@ -377,7 +377,7 @@ public class KujiExecutor {
             //Take item options
             //Check and take key
             if (!checkAndTakeKey(crate.getKey(), crate.isConsumeKey(), player)) {
-                player.sendSystemMessage(MsgUtil.prefixedColorMsg(messages.getNeedKeyMsg(), crate.getKey().getName()));
+                player.sendSystemMessage(MsgUtil.prefixedColorMsg(messages.getNeedKeyMsg(), crate.getKey().getAmount(), crate.getKey().getName()));
                 return false;
             }
 
