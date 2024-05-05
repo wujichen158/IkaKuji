@@ -9,14 +9,16 @@ import com.github.wujichen158.ikakuji.config.KujiObj;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.entity.monster.WitchEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Triple;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class CrateFactory {
 
