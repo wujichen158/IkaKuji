@@ -222,7 +222,7 @@ public class KujiExecutor {
         ItemStack itemStack = UtilConfigItem.fromConfigItem(reward.getDisplayItem());
         CompoundNBT display = itemStack.getOrCreateTagElement("display");
         ListNBT currentLore = display.getList("Lore", 8);
-        currentLore.add(StringNBT.valueOf(""));
+        currentLore.add(StringNBT.valueOf(" "));
         IkaKujiLocaleCfg.Messages messages = IkaKuji.getInstance().getLocale().getMessages();
         currentLore.add(StringNBT.valueOf(
                 ITextComponent.Serializer.toJson(
@@ -240,11 +240,22 @@ public class KujiExecutor {
 
     public static void executeKujiLogic(PlayerInteractEvent event, KujiObj.Crate crate, boolean itemCrate) {
         PlayerEntity player = event.getPlayer();
-        AtomicInteger minCount = new AtomicInteger(itemCrate ? event.getItemStack().getCount() : -1);
+        ItemStack itemStack = event.getItemStack();
+        AtomicInteger minCount = new AtomicInteger(-1);
+        int crateCountRequired = 1;
+        if (itemCrate) {
+            crateCountRequired = CrateFactory.getItemCrateCountRequired(itemStack);
+            if (crateCountRequired > itemStack.getCount()) {
+                player.sendMessage(MsgUtil.prefixedColorMsg(IkaKuji.getInstance().getLocale().getMessages().getNeedItemCrateMsg(), crateCountRequired, itemStack.getItem().getName(itemStack).getString()), player.getUUID());
+                return;
+            }
+            minCount.set(itemStack.getCount() / crateCountRequired);
+        }
+
         if (executeKujiLogic(player, crate, minCount)) {
             //Consume crate
             if (!player.isCreative() && crate.isConsumeCrate() && itemCrate) {
-                event.getItemStack().shrink(minCount.get());
+                event.getItemStack().shrink((crate.isJumpAnimation() ? minCount.get() : 1) * crateCountRequired);
             }
         }
     }
@@ -339,18 +350,18 @@ public class KujiExecutor {
                     .min(Integer::compare)
                     .orElse(0);
 
-            //Take item options must execute last
-            //Check and take key
+            //Take item options
+            //Check and take keys
             int keyCount = checkAndTakeKeys(crate.getKey(), crate.isConsumeKey(), player, times);
             if (keyCount == -1) {
-                player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNeedKeyMsg(), crate.getKey().getName()), player.getUUID());
+                player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNeedKeyMsg(), crate.getKey().getAmount(), crate.getKey().getName()), player.getUUID());
                 return false;
             } else if (keyCount > 0) {
                 times = keyCount;
             }
             minCount.set(times);
 
-            // Generate rewards
+            // Generate rewards must execute last
             rewards = genRandomRewards(availableRewards, totalWeight, playerDrawn, times);
             if (rewards.isEmpty()) {
                 player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNoAvailableRwdMsg()), player.getUUID());
@@ -361,14 +372,14 @@ public class KujiExecutor {
         } else {
             //TODO: Async?
 
-            //Take item options must execute last
+            //Take item options
             //Check and take key
             if (!checkAndTakeKey(crate.getKey(), crate.isConsumeKey(), player)) {
                 player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNeedKeyMsg(), crate.getKey().getName()), player.getUUID());
                 return false;
             }
 
-            // Generate rewards
+            // Generate rewards must execute last
             rewards = genRandomRewards(availableRewards, totalWeight, playerDrawn);
             if (rewards.isEmpty()) {
                 player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNoAvailableRwdMsg()), player.getUUID());
@@ -419,12 +430,16 @@ public class KujiExecutor {
                 if (ItemUtil.equalsWithPureTag(invItem, UtilConfigItem.fromConfigItem(crateKey))) {
                     //Consume keys
                     if (!player.isCreative()) {
-                        int maxKeyCount = invItem.getCount() / crateKey.getAmount();
-                        minCount = Math.min(minCount, maxKeyCount);
-                        if (isConsumeKey) {
-                            invItem.shrink(crateKey.getAmount() * minCount);
+                        if (crateKey.getAmount() <= invItem.getCount()) {
+                            int maxKeyCount = invItem.getCount() / crateKey.getAmount();
+                            minCount = Math.min(minCount, maxKeyCount);
+                            if (isConsumeKey) {
+                                invItem.shrink(crateKey.getAmount() * minCount);
+                            }
+                            return minCount;
+                        } else {
+                            return -1;
                         }
-                        return minCount;
                     }
                     return 0;
                 }
