@@ -33,16 +33,17 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
         private String prefix = "&e&l[&6&lIka Kuji&e&l]";
         private String noOpenPermMsg = "&fYou don't have permission to open crate %s";
         private String noPreviewPermMsg = "&fYou don't have permission to preview crate %s";
-        private String needKeyMsg = "&fYou need a %s to join this kuji!";
+        private String needItemCrateMsg = "&fYou need at least %d %s &fcrate(s) to join this kuji!";
+        private String needKeyMsg = "&fYou need at least %d %s &fkey(s) to join this kuji!";
         private String incompletePreKujiMsg = "&fYou will also need to complete these pre-kuji: %s";
         private String oneRoundMsg = "&fThis crate can only be opened for one round!";
         private String insufficientInvSizeMsg = "&fYou don't have enough inventory space to receive the reward";
         private String noAvailableRwdMsg = "&fThis crate has no available rewards!";
-        private String openCrateForPlayerMsg = "&fSuccessfully open crate %s for player %s";
-        private String lastRewardFailMsg = "&fFailed to deliver the last-shot reward of crate %s, please contact admin to deliver again";
+        private String openCrateForPlayerMsg = "&fSuccessfully open crate %s &ffor player %s";
+        private String lastRewardFailMsg = "&fFailed to deliver the last-shot reward of crate %s&f, please contact admin to deliver again";
+        private String dash = "&6————————————————";
         private String rewardRemainCount = "&6%d remaining";
         private String probPerReward = "&6probability per reward is about: %.2f%%";
-
 
         public String getPrefix() {
             return prefix;
@@ -54,6 +55,10 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
 
         public String getNoPreviewPermMsg() {
             return noPreviewPermMsg;
+        }
+
+        public String getNeedItemCrateMsg() {
+            return needItemCrateMsg;
         }
 
         public String getNeedKeyMsg() {
@@ -78,6 +83,10 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
 
         public String getOpenCrateForPlayerMsg() {
             return openCrateForPlayerMsg;
+        }
+
+        public String getDash() {
+            return dash;
         }
 
         public String getLastRewardFailMsg() {
@@ -115,11 +124,11 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
     @ConfigSerializable
     public static class Commands {
         private String configReloaded = "&fSuccessfully reloaded!";
-        private String giveKey = "&fYou give the key of crate %s to player %s";
-        private String noKey = "&fCrate %s has no key";
+        private String giveKey = "&fYou give the key of crate %s &fto player %s";
+        private String noKey = "&fCrate %s %fhas no key";
         private String giveCrate = "&fYou give a crate %s to player %s";
-        private String invalidItemCrate = "&fInvalid item crate name %s!";
-        private String notItemCrate = "&fCrate %s is not an item chest and cannot be given";
+        private String invalidItemCrate = "&fInvalid item crate name %s%f!";
+        private String notItemCrate = "&fCrate %s %fis not an item chest and cannot be given";
         private String listTitle = "&6————————Kujis On-going————————";
         private String listElemPrefix = "&e· %s";
         private String listFooter = "&6——————————————————————————————";
