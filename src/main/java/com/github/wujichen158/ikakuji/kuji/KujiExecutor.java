@@ -227,13 +227,11 @@ public class KujiExecutor {
         IkaKujiLocaleCfg.Messages messages = IkaKuji.getInstance().getLocale().getMessages();
         currentLore.add(StringNBT.valueOf(
                 ITextComponent.Serializer.toJson(
-                        UtilChatColour.colour(String.format(
-                                messages.getRewardRemainCount(), rewardCount)))));
+                        MsgUtil.colorMsg(messages.getRewardRemainCount(), rewardCount))));
         if (reward.isShowProbInPreview()) {
             currentLore.add(StringNBT.valueOf(
                     ITextComponent.Serializer.toJson(
-                            UtilChatColour.colour(String.format(
-                                    messages.getProbPerReward(), (reward.calWeightPerReward(weightOverrides) / currentTotalWeight) * 100d)))));
+                            MsgUtil.colorMsg(messages.getProbPerReward(), (reward.calWeightPerReward(weightOverrides) / currentTotalWeight) * 100d))));
         }
         display.put("Lore", currentLore);
         itemStack.addTagElement("display", display);
