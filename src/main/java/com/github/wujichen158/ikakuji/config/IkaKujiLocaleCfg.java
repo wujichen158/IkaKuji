@@ -41,6 +41,7 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
         private String noAvailableRwdMsg = "&fThis crate has no available rewards!";
         private String openCrateForPlayerMsg = "&fSuccessfully open crate %s &ffor player %s";
         private String lastRewardFailMsg = "&fFailed to deliver the last-shot reward of crate %s&f, please contact admin to deliver again";
+        private String dash = "&6————————————————";
         private String rewardRemainCount = "&6%d remaining";
         private String probPerReward = "&6probability per reward is about: %.2f%%";
 
@@ -82,6 +83,10 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
 
         public String getOpenCrateForPlayerMsg() {
             return openCrateForPlayerMsg;
+        }
+
+        public String getDash() {
+            return dash;
         }
 
         public String getLastRewardFailMsg() {

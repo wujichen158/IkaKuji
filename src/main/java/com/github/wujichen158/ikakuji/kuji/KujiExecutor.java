@@ -222,8 +222,10 @@ public class KujiExecutor {
         ItemStack itemStack = UtilConfigItem.fromConfigItem(reward.getDisplayItem());
         CompoundNBT display = itemStack.getOrCreateTagElement("display");
         ListNBT currentLore = display.getList("Lore", 8);
-        currentLore.add(StringNBT.valueOf(" "));
         IkaKujiLocaleCfg.Messages messages = IkaKuji.getInstance().getLocale().getMessages();
+        currentLore.add(StringNBT.valueOf(
+                ITextComponent.Serializer.toJson(
+                        MsgUtil.colorMsg(messages.getDash()))));
         currentLore.add(StringNBT.valueOf(
                 ITextComponent.Serializer.toJson(
                         MsgUtil.colorMsg(messages.getRewardRemainCount(), rewardCount))));
