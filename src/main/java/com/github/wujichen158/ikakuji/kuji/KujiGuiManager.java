@@ -16,11 +16,13 @@ import com.github.wujichen158.ikakuji.config.envynew.UtilConfigInterface;
 import com.github.wujichen158.ikakuji.kuji.gui.IGuiTickHandler;
 import com.github.wujichen158.ikakuji.kuji.gui.impl.GuiTickHandlerFactory;
 import com.github.wujichen158.ikakuji.util.PlayerKujiFactory;
+import com.google.common.util.concurrent.AtomicDouble;
 import net.minecraft.init.Enchantments;
 import net.minecraft.item.ItemStack;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,8 +46,8 @@ public class KujiGuiManager {
                 .topLeftY(0)
                 .tickHandler(GuiFactory.tickBuilder()
                         .async()
-                        .initialDelay((int)(crate.getInitialDelay() * 20))
-                        .repeatDelay((int)(crate.getRepeatDelay() * 20))
+                        .initialDelay((int) (crate.getInitialDelay() * 20))
+                        .repeatDelay((int) (crate.getRepeatDelay() * 20))
                         .handler(tickHandler.handle(crate, player, rewards, timer, cleared, rewardItem))
                         .build())
                 .build();
@@ -66,7 +68,7 @@ public class KujiGuiManager {
                 .open(IkaKuji.getInstance().getPlayerManager().getPlayer(player.getParent()));
     }
 
-    public static void preview(KujiObj.Crate crate, ForgeEnvyPlayer player, List<Pair<ExtendedConfigItem, Integer>> availableRewardItems, int page) {
+    public static void preview(KujiObj.Crate crate, ForgeEnvyPlayer player, List<Pair<KujiObj.Reward, Integer>> availableRewards, AtomicDouble currentTotalWeight, Map<String, Integer> weightOverrideMap, int page) {
         Pane pane = GuiFactory.paneBuilder()
                 .height(crate.getPreviewGuiSettings().getHeight())
                 .width(9)
@@ -81,11 +83,10 @@ public class KujiGuiManager {
         for (int previewSlot : crate.getPreviewSlots()) {
             ItemStack itemStack;
             // Remain slots will keep empty
-            if (beginIndex < availableRewardItems.size()) {
-                Pair<ExtendedConfigItem, Integer> pair = availableRewardItems.get(beginIndex);
-                itemStack = UtilConfigItem.fromConfigItem(pair.getX());
-                // Add a lore for amount preview
-                KujiExecutor.addRewardLore(itemStack, pair.getY());
+            if (beginIndex < availableRewards.size()) {
+                Pair<KujiObj.Reward, Integer> pair = availableRewards.get(beginIndex);
+                // Add lores for amount and probability preview
+                itemStack = KujiExecutor.addRewardLore(pair.getX(), pair.getY(), currentTotalWeight.get(), weightOverrideMap);
             } else {
                 itemStack = ItemStack.EMPTY;
             }
@@ -94,17 +95,17 @@ public class KujiGuiManager {
         }
 
         // Next page button
-        if (onePageCount * page < availableRewardItems.size()) {
+        if (onePageCount * page < availableRewards.size()) {
             UtilConfigItem.addConfigItem(pane,
                     crate.getPreviewNextPage(),
-                    (envyPlayer, clickType) -> preview(crate, player, availableRewardItems, page + 1));
+                    (envyPlayer, clickType) -> preview(crate, player, availableRewards, currentTotalWeight, weightOverrideMap, page + 1));
         }
 
         // Previous page button
         if (page > 1) {
             UtilConfigItem.addConfigItem(pane,
-                            crate.getPreviewPreviousPage(),
-                            (envyPlayer, clickType) -> preview(crate, player, availableRewardItems, page - 1));
+                    crate.getPreviewPreviousPage(),
+                    (envyPlayer, clickType) -> preview(crate, player, availableRewards, currentTotalWeight, weightOverrideMap, page - 1));
         }
 
         // Placeholder
