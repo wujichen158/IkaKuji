@@ -40,6 +40,7 @@ public class KujiTriggerListener {
             return;
         }
 
+        // When click a blockEntity with a crate item, it won't trigger either blockEntity or the crate
         if (!isItemCrate(event)) {
             BlockPos blockPos = event.getHitVec().getBlockPos();
             KujiObj.Crate crate = CrateFactory.tryGetWorldPosCrate(event.getPlayer().level,

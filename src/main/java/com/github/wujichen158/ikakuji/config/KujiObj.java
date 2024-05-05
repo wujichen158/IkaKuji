@@ -246,11 +246,20 @@ public class KujiObj {
             return winSound;
         }
 
-        public Integer getTotalWeight() {
+        public int getTotalWeight() {
             return totalWeight;
         }
 
-        public Boolean getCanPreview() {
+        public double calWeightPerReward(Map<String, Integer> weightOverride) {
+            if (Optional.ofNullable(weightPerReward).isEmpty()) {
+                this.weightPerReward = (double) Optional.ofNullable(weightOverride)
+                        .map(weightOverrideMap -> weightOverrideMap.get(this.id))
+                        .orElse(this.totalWeight) / this.amountPerKuji;
+            }
+            return this.weightPerReward;
+        }
+
+        public boolean isCanPreview() {
             return canPreview;
         }
 
