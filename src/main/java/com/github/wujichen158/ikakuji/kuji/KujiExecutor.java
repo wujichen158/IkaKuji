@@ -351,17 +351,17 @@ public class KujiExecutor {
         } else {
             //TODO: Async?
 
-            // Generate rewards
-            rewards = genRandomRewards(availableRewards, totalWeight, playerDrawn);
-            if (rewards.isEmpty()) {
-                player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNoAvailableRwdMsg()), player.getUUID());
-                return false;
-            }
-
             //Take item options must execute last
             //Check and take key
             if (!checkAndTakeKey(crate.getKey(), crate.isConsumeKey(), player)) {
                 player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNeedKeyMsg(), crate.getKey().getName()), player.getUUID());
+                return false;
+            }
+
+            // Generate rewards
+            rewards = genRandomRewards(availableRewards, totalWeight, playerDrawn);
+            if (rewards.isEmpty()) {
+                player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNoAvailableRwdMsg()), player.getUUID());
                 return false;
             }
 
