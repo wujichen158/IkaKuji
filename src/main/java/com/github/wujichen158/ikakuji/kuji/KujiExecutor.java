@@ -331,7 +331,7 @@ public class KujiExecutor {
 
             //Take item options must execute last
             //Check and take key
-            int keyCount = checkAndTakeKeys(crate.getKey(), player, times);
+            int keyCount = checkAndTakeKeys(crate.getKey(), crate.isConsumeKey(), player, times);
             if (keyCount == -1) {
                 player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNeedKeyMsg(), crate.getKey().getName()), player.getUUID());
                 return false;
@@ -360,7 +360,7 @@ public class KujiExecutor {
 
             //Take item options must execute last
             //Check and take key
-            if (!checkAndTakeKey(crate.getKey(), player)) {
+            if (!checkAndTakeKey(crate.getKey(), crate.isConsumeKey(), player)) {
                 player.sendMessage(MsgUtil.prefixedColorMsg(messages.getNeedKeyMsg(), crate.getKey().getName()), player.getUUID());
                 return false;
             }
@@ -380,14 +380,17 @@ public class KujiExecutor {
         return invSize;
     }
 
-    private static boolean checkAndTakeKey(ExtendedConfigItem crateKey, PlayerEntity player) {
+    private static boolean checkAndTakeKey(ExtendedConfigItem crateKey, boolean isConsumeKey, PlayerEntity player) {
         if (Optional.ofNullable(crateKey).isPresent()) {
             for (ItemStack invItem : player.inventory.items) {
                 if (ItemUtil.equalsWithPureTag(invItem, UtilConfigItem.fromConfigItem(crateKey))) {
                     //Consume key
                     if (!player.isCreative()) {
                         if (crateKey.getAmount() <= invItem.getCount()) {
-                            invItem.shrink(crateKey.getAmount());
+                            if (isConsumeKey) {
+                                invItem.shrink(crateKey.getAmount());
+                            }
+                            return true;
                         } else {
                             return false;
                         }
@@ -400,7 +403,7 @@ public class KujiExecutor {
         return true;
     }
 
-    private static int checkAndTakeKeys(ExtendedConfigItem crateKey, PlayerEntity player, int minCount) {
+    private static int checkAndTakeKeys(ExtendedConfigItem crateKey, boolean isConsumeKey, PlayerEntity player, int minCount) {
         if (Optional.ofNullable(crateKey).isPresent()) {
             for (ItemStack invItem : player.inventory.items) {
                 if (ItemUtil.equalsWithPureTag(invItem, UtilConfigItem.fromConfigItem(crateKey))) {
@@ -408,7 +411,9 @@ public class KujiExecutor {
                     if (!player.isCreative()) {
                         int maxKeyCount = invItem.getCount() / crateKey.getAmount();
                         minCount = Math.min(minCount, maxKeyCount);
-                        invItem.shrink(crateKey.getAmount() * minCount);
+                        if (isConsumeKey) {
+                            invItem.shrink(crateKey.getAmount() * minCount);
+                        }
                         return minCount;
                     }
                     return 0;

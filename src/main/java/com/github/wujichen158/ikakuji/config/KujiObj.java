@@ -24,7 +24,9 @@ public class KujiObj {
     public static class Crate {
         private String displayName;
         private EnumCrateType crateType;
+        private boolean consumeCrate = true;
         private ExtendedConfigItem key;
+        private boolean consumeKey = true;
         private List<Reward> rewards;
         private transient Map<String, Integer> rewardAmountMap;
         private transient List<String> rewardNames;
@@ -69,8 +71,16 @@ public class KujiObj {
             return crateType;
         }
 
+        public boolean isConsumeCrate() {
+            return consumeCrate;
+        }
+
         public ExtendedConfigItem getKey() {
             return key;
+        }
+
+        public boolean isConsumeKey() {
+            return consumeKey;
         }
 
         public List<Reward> getRewards() {
@@ -213,9 +223,12 @@ public class KujiObj {
 
         private ConfigSound winSound;
 
-        private Integer totalWeight = 1;
+        private int totalWeight = 1;
+        private transient Double weightPerReward;
 
-        private Boolean canPreview = true;
+        private boolean canPreview = true;
+
+        private boolean showProbInPreview = false;
 
         public String getId() {
             return id;
@@ -239,6 +252,10 @@ public class KujiObj {
 
         public Boolean getCanPreview() {
             return canPreview;
+        }
+
+        public boolean isShowProbInPreview() {
+            return showProbInPreview;
         }
 
         public void give(ForgeEnvyPlayer player) {
