@@ -2,7 +2,6 @@ package com.github.wujichen158.ikakuji.kuji;
 
 import com.envyful.api.concurrency.UtilConcurrency;
 import com.envyful.api.config.type.ExtendedConfigItem;
-import com.envyful.api.forge.chat.UtilChatColour;
 import com.envyful.api.forge.config.ConfigSound;
 import com.envyful.api.forge.config.UtilConfigItem;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
