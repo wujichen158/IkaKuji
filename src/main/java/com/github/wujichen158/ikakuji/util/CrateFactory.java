@@ -8,6 +8,7 @@ import com.github.wujichen158.ikakuji.config.KujiCrateType;
 import com.github.wujichen158.ikakuji.config.KujiObj;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.tuple.Triple;
@@ -22,7 +23,7 @@ import java.util.Optional;
 public class CrateFactory {
 
     private static final Map<String, KujiObj.Crate> LOADED_CRATES = Maps.newHashMap();
-    private static final Map<KujiCrateType.ItemWrapper, String> ITEM_CRATE_MAP = Maps.newHashMap();
+    private static final Map<KujiCrateType.ItemWrapper, Pair<String, Integer>> ITEM_CRATE_MAP = Maps.newHashMap();
     private static final Map<String, List<ItemStack>> CRATE_ITEMS_MAP = Maps.newHashMap();
     private static final Map<String, Map<Triple<Integer, Integer, Integer>, String>> WORLD_POS_CRATE_MAP = Maps.newHashMap();
     private static final Map<String, String> ENTITY_CRATE_MAP = Maps.newHashMap();
@@ -34,7 +35,7 @@ public class CrateFactory {
 
     private static void registerItemCrate(ItemStack itemStack, String crateName) {
         KujiCrateType.ItemWrapper itemWrapper = new KujiCrateType.ItemWrapper(itemStack);
-        ITEM_CRATE_MAP.put(itemWrapper, crateName);
+        ITEM_CRATE_MAP.put(itemWrapper, new Pair<>(crateName, itemStack.getCount()));
         CRATE_ITEMS_MAP.computeIfAbsent(crateName, key -> Lists.newArrayList()).add(itemStack);
     }
 
@@ -83,8 +84,12 @@ public class CrateFactory {
         }
     }
 
+    public static int getItemCrateCountRequired(ItemStack itemStack) {
+        return Optional.ofNullable(ITEM_CRATE_MAP.get(new KujiCrateType.ItemWrapper(itemStack))).map(Pair::getSecond).orElse(1);
+    }
+
     public static KujiObj.Crate tryGetItemCrate(ItemStack itemStack) {
-        return LOADED_CRATES.getOrDefault(ITEM_CRATE_MAP.getOrDefault(new KujiCrateType.ItemWrapper(itemStack), null), null);
+        return LOADED_CRATES.getOrDefault(Optional.ofNullable(ITEM_CRATE_MAP.get(new KujiCrateType.ItemWrapper(itemStack))).map(Pair::getFirst).orElse(null), null);
     }
 
     public static KujiObj.Crate tryGetWorldPosCrate(Level world, int x, int y, int z) {
