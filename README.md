@@ -19,7 +19,7 @@ _——“一番赏什么的抽不中的哟，我是不会上当的哟”_
 
 ## 下载与安装
 
-要下载并安装本 mod，请于本仓库的 [发行版](https://gitee.com/ancientsky/ika-kuji/releases) 位置下载对应的版本，并将其放入 Minecraft 服务器的 `mods` 文件夹中
+要下载并安装本 mod，请于本仓库的 [发行版](releases) 位置下载对应的版本，并将其放入 Minecraft 服务器的 `mods` 文件夹中
 
 ## 教程
 
