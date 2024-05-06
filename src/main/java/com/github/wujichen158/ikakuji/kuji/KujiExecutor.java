@@ -334,8 +334,7 @@ public class KujiExecutor {
         }
 
         List<KujiObj.Reward> rewards;
-//        if (crate.isJumpAnimation()) {
-        if (true) {
+        if (crate.isJumpAnimation()) {
             // Min availableReward size, limitPerDraw, inventory size, crate count and key count
             int crateCount = minCount.get();
             int limitPerDraw = crate.getLimitPerDraw();

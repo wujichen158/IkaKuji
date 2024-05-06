@@ -11,6 +11,7 @@ import com.envyful.api.type.Pair;
 import com.github.wujichen158.ikakuji.IkaKuji;
 import com.github.wujichen158.ikakuji.config.KujiObj;
 import com.github.wujichen158.ikakuji.config.envynew.UtilConfigInterface;
+import com.github.wujichen158.ikakuji.kuji.gui.EnumGuiPattern;
 import com.github.wujichen158.ikakuji.kuji.gui.IGuiTickHandler;
 import com.github.wujichen158.ikakuji.kuji.gui.impl.GuiTickHandlerFactory;
 import com.github.wujichen158.ikakuji.util.PlayerKujiFactory;
@@ -34,7 +35,9 @@ public class KujiGuiManager {
                 .itemFlag(ItemFlag.HIDE_ENCHANTS)
                 .build();
 
-        IGuiTickHandler tickHandler = GuiTickHandlerFactory.getFromElem(crate.getGuiChangePattern());
+//        IGuiTickHandler tickHandler = GuiTickHandlerFactory.getFromElem(crate.getGuiChangePattern());
+        // 1.12 emergency plan
+        GuiTickHandlerFactory.KujiHandler tickHandler = (GuiTickHandlerFactory.KujiHandler) GuiTickHandlerFactory.getFromElem(EnumGuiPattern.kuji);
 
         Pane pane = GuiFactory.paneBuilder()
                 .height(crate.getDisplayGuiSettings().getHeight())
@@ -51,6 +54,9 @@ public class KujiGuiManager {
 
         // init kuji GUI
         tickHandler.initGui(pane, crate, rewards);
+
+        // 1.12 emergency plan
+        tickHandler.draw(pane, crate, rewards, rewardItem);
 
         GuiFactory.guiBuilder()
                 .addPane(pane)

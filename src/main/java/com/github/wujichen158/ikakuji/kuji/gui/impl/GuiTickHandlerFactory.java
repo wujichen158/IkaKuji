@@ -86,24 +86,28 @@ public class GuiTickHandlerFactory {
             return pane -> {
                 // Only render one time is ok
                 if (!cleared.get()) {
-                    List<Integer> displaySlots = crate.getDisplaySlots();
-
-                    int rewardsSize = rewards.size();
-                    ItemStack coverItem = UtilConfigItem.fromConfigItem(crate.getCoverItem());
-
-
-                    int i = 0;
-                    for (int slot : displaySlots) {
-                        ItemStack itemStack = i < rewardsSize ? coverItem : ItemStack.EMPTY;
-                        pane.set(slot % 9, slot / 9, GuiFactory.displayableBuilder(itemStack)
-                                .clickHandler((envyPlayer, clickType) -> {
-                                    setResultPane(pane, rewardItem, coverItem, displaySlots, rewardsSize, slot);
-                                }).build());
-                        i++;
-                    }
+                    draw(pane, crate, rewards, rewardItem);
                     cleared.set(true);
                 }
             };
+        }
+
+        public void draw(Pane pane, KujiObj.Crate crate, List<KujiObj.Reward> rewards, ItemStack rewardItem) {
+            List<Integer> displaySlots = crate.getDisplaySlots();
+
+            int rewardsSize = rewards.size();
+            ItemStack coverItem = UtilConfigItem.fromConfigItem(crate.getCoverItem());
+
+
+            int i = 0;
+            for (int slot : displaySlots) {
+                ItemStack itemStack = i < rewardsSize ? coverItem : ItemStack.EMPTY;
+                pane.set(slot % 9, slot / 9, GuiFactory.displayableBuilder(itemStack)
+                        .clickHandler((envyPlayer, clickType) -> {
+                            setResultPane(pane, rewardItem, coverItem, displaySlots, rewardsSize, slot);
+                        }).build());
+                i++;
+            }
         }
 
         private void setResultPane(Pane pane, ItemStack rewardItem, ItemStack coverItem, List<Integer> displaySlots, int rewardsSize, int rewardSlot) {
