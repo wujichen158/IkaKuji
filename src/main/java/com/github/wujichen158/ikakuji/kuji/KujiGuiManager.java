@@ -1,12 +1,10 @@
 package com.github.wujichen158.ikakuji.kuji;
 
-import com.envyful.api.config.type.ExtendedConfigItem;
 import com.envyful.api.forge.chat.UtilChatColour;
 import com.envyful.api.forge.config.UtilConfigItem;
 import com.envyful.api.forge.items.ItemBuilder;
 import com.envyful.api.forge.items.ItemFlag;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
-import com.envyful.api.gui.Transformer;
 import com.envyful.api.gui.factory.GuiFactory;
 import com.envyful.api.gui.pane.Pane;
 import com.envyful.api.type.Pair;
@@ -20,7 +18,6 @@ import com.google.common.util.concurrent.AtomicDouble;
 import net.minecraft.init.Enchantments;
 import net.minecraft.item.ItemStack;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,12 +41,12 @@ public class KujiGuiManager {
                 .width(9)
                 .topLeftX(0)
                 .topLeftY(0)
-                .tickHandler(GuiFactory.tickBuilder()
-                        .async()
-                        .initialDelay((int) (crate.getInitialDelay() * 20))
-                        .repeatDelay((int) (crate.getRepeatDelay() * 20))
-                        .handler(tickHandler.handle(crate, player, rewards, timer, cleared, rewardItem))
-                        .build())
+//                .tickHandler(GuiFactory.tickBuilder()
+//                        .async()
+//                        .initialDelay((int) (crate.getInitialDelay() * 20))
+//                        .repeatDelay((int) (crate.getRepeatDelay() * 20))
+//                        .handler(tickHandler.handle(crate, player, rewards, timer, cleared, rewardItem))
+//                        .build())
                 .build();
 
         // init kuji GUI
@@ -125,6 +122,10 @@ public class KujiGuiManager {
                 .title(UtilChatColour.translateColourCodes('&', crate.getPreviewGuiSettings().getTitle()))
                 .height(crate.getPreviewGuiSettings().getHeight())
                 .setPlayerManager(IkaKuji.getInstance().getPlayerManager())
+                .closeConsumer(GuiFactory.closeConsumerBuilder()
+                        .handler(envyPlayer -> {
+                        })
+                        .build())
                 .build()
                 .open(IkaKuji.getInstance().getPlayerManager().getPlayer(player.getParent()));
     }

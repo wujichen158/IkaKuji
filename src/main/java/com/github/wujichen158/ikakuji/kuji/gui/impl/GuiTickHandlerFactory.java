@@ -57,7 +57,7 @@ public class GuiTickHandlerFactory {
                 for (int i = spinSlots.size() - 1; i > 0; i--) {
                     int slot = spinSlots.get(i);
                     int lastSlot = spinSlots.get(i - 1);
-                    pane.set(slot % 9, slot / 9, pane.get(lastSlot % 9, lastSlot / 9));
+//                    pane.set(slot % 9, slot / 9, pane.get(lastSlot % 9, lastSlot / 9));
                 }
 
                 int slot = spinSlots.get(0);
@@ -184,7 +184,7 @@ public class GuiTickHandlerFactory {
                     int col = spinCols.get(i);
                     if ((timer.get() + offset - (i + 1) * rewardGap) * crate.getRepeatDelay() <= crate.getSpinDuration()) {
                         for (int j = guiHeight; j > 0; j--) {
-                            pane.set(col, j, pane.get(col, j - 1));
+//                            pane.set(col, j, pane.get(col, j - 1));
                         }
                         pane.set(col, 0, GuiFactory.displayable(
                                 (timer.get() + offset - i * rewardGap) * crate.getRepeatDelay() == crate.getSpinDuration() ?
