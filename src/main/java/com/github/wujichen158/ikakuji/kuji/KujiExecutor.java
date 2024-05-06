@@ -216,23 +216,16 @@ public class KujiExecutor {
         return playerDrawn;
     }
 
-    //TODO: May not compatible in 1.12
     public static ItemStack addRewardLore(KujiObj.Reward reward, int rewardCount, double currentTotalWeight, Map<String, Integer> weightOverrides) {
         ItemStack itemStack = UtilConfigItem.fromConfigItem(reward.getDisplayItem());
         Optional.ofNullable(itemStack.getTagCompound()).ifPresent(nbtTagCompound -> {
             NBTTagCompound display = itemStack.getOrCreateSubCompound("display");
             NBTTagList currentLore = display.getTagList("Lore", 8);
             IkaKujiLocaleCfg.Messages messages = IkaKuji.getInstance().getLocale().getMessages();
-            currentLore.appendTag(new NBTTagString(
-                    ITextComponent.Serializer.componentToJson(
-                            MsgUtil.colorMsg(messages.getDash()))));
-            currentLore.appendTag(new NBTTagString(
-                    ITextComponent.Serializer.componentToJson(
-                            MsgUtil.colorMsg(messages.getRewardRemainCount(), rewardCount))));
+            currentLore.appendTag(new NBTTagString(messages.getDash()));
+            currentLore.appendTag(new NBTTagString(String.format(messages.getRewardRemainCount(), rewardCount)));
             if (reward.isShowProbInPreview()) {
-                currentLore.appendTag(new NBTTagString(
-                        ITextComponent.Serializer.componentToJson(
-                                MsgUtil.colorMsg(messages.getProbPerReward(), (reward.calWeightPerReward(weightOverrides) / currentTotalWeight) * 100d))));
+                currentLore.appendTag(new NBTTagString(String.format(messages.getProbPerReward(), (reward.calWeightPerReward(weightOverrides) / currentTotalWeight) * 100d)));
             }
             display.setTag("Lore", currentLore);
             nbtTagCompound.setTag("display", display);
@@ -341,7 +334,8 @@ public class KujiExecutor {
         }
 
         List<KujiObj.Reward> rewards;
-        if (crate.isJumpAnimation()) {
+//        if (crate.isJumpAnimation()) {
+        if (true) {
             // Min availableReward size, limitPerDraw, inventory size, crate count and key count
             int crateCount = minCount.get();
             int limitPerDraw = crate.getLimitPerDraw();
