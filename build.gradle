@@ -48,8 +48,8 @@ dependencies {
     // =< 3.7.0: doesn't have Pane#set and tickHandler
     // > 4.0.0: can't compile since Java language level incompatibility
 //    shadow (group: 'com.envyful.api', name: 'commons', version: '4.0.0')
-    shadow group: 'com.github.Pixelmon-Development.API', name: 'commons', version: '4.0.0'
-    shadow group: 'com.github.Pixelmon-Development.API', name: 'forge', version: '4.0.0'
+    shadow group: 'com.github.Pixelmon-Development.API', name: 'commons', version: '3.7.0'
+    shadow group: 'com.github.Pixelmon-Development.API', name: 'forge', version: '3.7.0'
 }
 
 jar {
