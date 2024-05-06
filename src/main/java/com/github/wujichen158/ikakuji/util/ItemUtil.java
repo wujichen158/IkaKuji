@@ -16,7 +16,7 @@ public class ItemUtil {
         if (here.isEmpty()) {
             return other.isEmpty();
         }
-        return !other.isEmpty() && here.getItem() == other.getItem() && tagMatches(here, other);
+        return here.isItemEqual(other) && tagMatches(here, other);
     }
 
     private static boolean tagMatches(ItemStack here, ItemStack other) {
@@ -38,6 +38,7 @@ public class ItemUtil {
             NBTTagCompound newTags = tag.copy();
             newTags.removeTag("display");
             newTags.removeTag("RepairCost");
+            newTags.removeTag("HideFlags");
             return newTags;
         }
         return null;

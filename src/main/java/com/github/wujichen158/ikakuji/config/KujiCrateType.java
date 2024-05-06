@@ -1,5 +1,6 @@
 package com.github.wujichen158.ikakuji.config;
 
+import com.github.wujichen158.ikakuji.util.ItemUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
@@ -61,17 +62,17 @@ public class KujiCrateType {
                 return false;
             }
             ItemWrapper other = (ItemWrapper) obj;
-            return this.itemStack.isItemEqual(other.itemStack);
+            return ItemUtil.equalsWithPureTag(this.itemStack, other.itemStack);
         }
 
         /**
-         * Currently use item and damage to judge
+         * Currently use item, damage and pure tag to judge
          *
          * @return a hashCode
          */
         @Override
         public int hashCode() {
-            return Objects.hash(this.itemStack.getItem(), this.itemStack.getItemDamage());
+            return Objects.hash(this.itemStack.getItem(), this.itemStack.getItemDamage(), ItemUtil.getPureTag(this.itemStack.getTagCompound()));
         }
     }
 }
