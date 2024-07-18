@@ -6,17 +6,17 @@ import com.envyful.api.forge.config.ConfigSound;
 import com.envyful.api.forge.player.ForgeEnvyPlayer;
 import com.envyful.api.forge.server.UtilForgeServer;
 import com.github.wujichen158.ikakuji.kuji.EnumCrateType;
+import com.github.wujichen158.ikakuji.kuji.EnumGlobalRewardRule;
 import com.github.wujichen158.ikakuji.kuji.KujiExecutor;
 import com.github.wujichen158.ikakuji.kuji.gui.EnumGuiPattern;
 import com.github.wujichen158.ikakuji.lib.Placeholders;
 import com.github.wujichen158.ikakuji.util.CrateFactory;
+import com.github.wujichen158.ikakuji.util.TimeUtil;
 import com.google.common.collect.Lists;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class KujiObj {
@@ -29,7 +29,7 @@ public class KujiObj {
         private boolean consumeKey = true;
         private List<Reward> rewards;
         private transient Map<String, Integer> rewardAmountMap;
-        private transient List<String> rewardNames;
+        private transient Map<String, Reward> rewardMap;
         private transient Integer rewardTotal;
 
         private boolean jumpAnimation = false;
@@ -91,7 +91,7 @@ public class KujiObj {
             return rewards.stream().mapToLong(reward -> reward.totalWeight).sum();
         }
 
-        // This reward map will be refreshed (i.e., set to null) after the Reward obj is updated
+        // This reward map will be refreshed (i.e., set to null) after the Crate obj is reloaded from yml
         public Map<String, Integer> getRewardAmountMapLazy() {
             if (Optional.ofNullable(rewardAmountMap).isEmpty()) {
                 rewardAmountMap = rewards.stream()
@@ -100,13 +100,12 @@ public class KujiObj {
             return rewardAmountMap;
         }
 
-        public List<String> getRewardNamesLazy() {
-            if (Optional.ofNullable(rewardNames).isEmpty()) {
-                rewardNames = rewards.stream()
-                        .flatMap(reward -> Collections.nCopies(reward.getAmountPerKuji(), reward.getId()).stream())
-                        .collect(Collectors.toList());
+        public Map<String, Reward> getRewardMapLazy() {
+            if (Optional.ofNullable(rewardMap).isEmpty()) {
+                rewardMap = rewards.stream()
+                        .collect(Collectors.toMap(KujiObj.Reward::getId, reward -> reward));
             }
-            return rewardNames;
+            return rewardMap;
         }
 
         public Integer getRewardTotalLazy() {
@@ -317,6 +316,148 @@ public class KujiObj {
                 });
             });
             return availableCrates;
+        }
+    }
+
+    @ConfigSerializable
+    public static class GlobalData {
+        private String crateName;
+        private EnumGlobalRewardRule rewardRule;
+        private String startTime = "";
+        private String endTime = "";
+        private transient LocalDateTime startDateTime;
+        private transient LocalDateTime endDateTime;
+        private transient int drawnCount;
+        private List<KujiObj.GlobalDataEntry> data;
+
+        public GlobalData() {
+            super();
+        }
+
+        public GlobalData(String crateName, EnumGlobalRewardRule rewardRule, String startTime, String endTime) {
+            this.crateName = crateName;
+            this.rewardRule = rewardRule;
+            this.startTime = startTime;
+            this.endTime = endTime;
+            this.data = Lists.newArrayList();
+        }
+
+        public String getCrateName() {
+            return crateName;
+        }
+
+        public EnumGlobalRewardRule getRewardRule() {
+            return rewardRule;
+        }
+
+        public String getStartTime() {
+            return startTime;
+        }
+
+        public String getEndTime() {
+            return endTime;
+        }
+
+        public LocalDateTime getStartDateTime() {
+            return startDateTime;
+        }
+
+        public LocalDateTime getEndDateTime() {
+            return endDateTime;
+        }
+
+        public int getDrawnCount() {
+            return drawnCount;
+        }
+
+        public void setEndTime(String endTime) {
+            this.endTime = endTime;
+        }
+
+        public void setData(List<KujiObj.GlobalDataEntry> data) {
+            this.data = data;
+        }
+
+        public void setEndDateTime(LocalDateTime endDateTime) {
+            this.endDateTime = endDateTime;
+        }
+
+        public void setStartDateTime(LocalDateTime startDateTime) {
+            this.startDateTime = startDateTime;
+        }
+
+        public void setDrawnCount(int drawnCount) {
+            this.drawnCount = drawnCount;
+        }
+
+        public void calDates() {
+            this.startDateTime = Optional.ofNullable(TimeUtil.parseTimeString(this.startTime))
+                    .orElse(LocalDateTime.now());
+            this.endDateTime = TimeUtil.parseTimeString(this.endTime);
+        }
+
+        public List<KujiObj.GlobalDataEntry> getData() {
+            return data;
+        }
+
+        public void updateData(int rewardIndex, UUID playerUuid, String playerName, String rewardId, String winTime) {
+            this.data.get(rewardIndex).update(playerUuid, playerName, rewardId, winTime);
+        }
+
+        public void addDrawnCount() {
+            this.drawnCount ++;
+        }
+    }
+
+    @ConfigSerializable
+    public static class GlobalDataEntry {
+        private UUID playerUuid;
+        private String playerName;
+        private String rewardId;
+        private String winTime;
+
+        public GlobalDataEntry(String rewardId) {
+            this.rewardId = rewardId;
+        }
+
+        public GlobalDataEntry() {}
+
+        public UUID getPlayerUuid() {
+            return playerUuid;
+        }
+
+        public String getPlayerName() {
+            return playerName;
+        }
+
+        public String getRewardId() {
+            return rewardId;
+        }
+
+        public String getWinTime() {
+            return winTime;
+        }
+
+        /**
+         * It'll update rewardId no matter what the original one is
+         *
+         * @param playerUuid
+         * @param playerName
+         * @param rewardId
+         * @param winTime
+         */
+        public void update(UUID playerUuid, String playerName, String rewardId, String winTime) {
+            this.playerUuid = playerUuid;
+            this.playerName = playerName;
+            this.rewardId = rewardId;
+            this.winTime = winTime;
+        }
+
+        /**
+         * Regard `playerUuid != null` as player is not null
+         */
+        public boolean isSettled() {
+            return this.playerUuid != null && this.winTime != null;
         }
     }
 }

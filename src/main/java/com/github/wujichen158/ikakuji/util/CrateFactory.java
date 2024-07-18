@@ -23,6 +23,7 @@ import java.util.Optional;
 public class CrateFactory {
 
     private static final Map<String, KujiObj.Crate> LOADED_CRATES = Maps.newHashMap();
+
     private static final Map<KujiCrateType.ItemWrapper, Pair<String, Integer>> ITEM_CRATE_MAP = Maps.newHashMap();
     private static final Map<String, List<ItemStack>> CRATE_ITEMS_MAP = Maps.newHashMap();
     private static final Map<String, Map<Triple<Integer, Integer, Integer>, String>> WORLD_POS_CRATE_MAP = Maps.newHashMap();
@@ -31,6 +32,11 @@ public class CrateFactory {
 
     private CrateFactory() {
         throw new UnsupportedOperationException("Static factory");
+    }
+
+    public static void register(ConfigurationNode node, KujiObj.Crate crate) {
+        LOADED_CRATES.put(crate.getDisplayName(), crate);
+        registerResponseCrate(node, crate);
     }
 
     private static void registerItemCrate(ItemStack itemStack, String crateName) {
@@ -102,11 +108,6 @@ public class CrateFactory {
 
     public static KujiObj.Crate tryGetEntityCrate(String entityName) {
         return LOADED_CRATES.getOrDefault(ENTITY_CRATE_MAP.getOrDefault(entityName, null), null);
-    }
-
-    public static void register(ConfigurationNode node, KujiObj.Crate crate) {
-        LOADED_CRATES.put(crate.getDisplayName(), crate);
-        registerResponseCrate(node, crate);
     }
 
     public static KujiObj.Crate get(String crateName) {

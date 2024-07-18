@@ -3,17 +3,18 @@ package com.github.wujichen158.ikakuji;
 import com.envyful.api.config.yaml.YamlConfigFactory;
 import com.envyful.api.forge.command.ForgeCommandFactory;
 import com.envyful.api.forge.command.parser.ForgeAnnotationCommandParser;
+import com.envyful.api.forge.concurrency.ForgeTaskBuilder;
 import com.envyful.api.forge.gui.factory.ForgeGuiFactory;
 import com.envyful.api.forge.player.ForgePlayerManager;
 import com.envyful.api.gui.factory.GuiFactory;
 import com.github.wujichen158.ikakuji.command.IkaKujiCmd;
-import com.github.wujichen158.ikakuji.command.completion.CrateDeliverCompleter;
-import com.github.wujichen158.ikakuji.command.completion.CrateNameCompleter;
+import com.github.wujichen158.ikakuji.command.completion.*;
 import com.github.wujichen158.ikakuji.config.IkaKujiCfg;
 import com.github.wujichen158.ikakuji.config.IkaKujiLocaleCfg;
 import com.github.wujichen158.ikakuji.lib.Reference;
 import com.github.wujichen158.ikakuji.listener.KujiTriggerListener;
 import com.github.wujichen158.ikakuji.listener.PlayerIOListener;
+import com.github.wujichen158.ikakuji.task.GlobalCheckTask;
 import com.github.wujichen158.ikakuji.util.CfgPostProcessUtil;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -61,6 +62,7 @@ public class IkaKuji {
             this.locale = YamlConfigFactory.getInstance(IkaKujiLocaleCfg.class);
 
             CfgPostProcessUtil.loadAllCrates();
+            CfgPostProcessUtil.loadAllGlobalData();
             CfgPostProcessUtil.cleanUpCurrentKuji();
 
         } catch (IOException e) {
@@ -89,6 +91,13 @@ public class IkaKuji {
         GuiFactory.setPlatformFactory(new ForgeGuiFactory());
 
         loadConfig();
+
+        new ForgeTaskBuilder()
+                .async(true)
+                .delay(20L)
+                .interval(20L)
+                .task(new GlobalCheckTask())
+                .start();
     }
 
     @SubscribeEvent
@@ -105,6 +114,9 @@ public class IkaKuji {
     public void onCommandRegistration(RegisterCommandsEvent event) {
         this.commandFactory.registerCompleter(new CrateDeliverCompleter());
         this.commandFactory.registerCompleter(new CrateNameCompleter());
+        this.commandFactory.registerCompleter(new GlobalKujiCompleter());
+        this.commandFactory.registerCompleter(new MixedKujiCompleter());
+        this.commandFactory.registerCompleter(new PreviewTypeCompleter());
         this.commandFactory.registerCommand(event.getDispatcher(), this.commandFactory.parseCommand(new IkaKujiCmd()));
     }
 

@@ -84,7 +84,7 @@ public class GuiTickHandlerFactory {
         @Override
         public Consumer<Pane> handle(KujiObj.Crate crate, ForgeEnvyPlayer player, List<KujiObj.Reward> rewards, AtomicInteger timer, AtomicBoolean cleared, ItemStack rewardItem) {
             return pane -> {
-                // Only render one time is ok
+                // Only render once is enough
                 if (!cleared.get()) {
                     List<Integer> displaySlots = crate.getDisplaySlots();
 
@@ -108,6 +108,7 @@ public class GuiTickHandlerFactory {
 
         private void setResultPane(Pane pane, ItemStack rewardItem, ItemStack coverItem, List<Integer> displaySlots, int rewardsSize, int rewardSlot) {
             int i = 0;
+            //TODO: Check whether this loop is necessary, since it should only change the reward slot
             for (int slot : displaySlots) {
                 ItemStack itemStack = rewardSlot == slot ? rewardItem : i < rewardsSize ? coverItem : ItemStack.EMPTY;
                 pane.set(slot % 9, slot / 9, GuiFactory.displayable(itemStack));

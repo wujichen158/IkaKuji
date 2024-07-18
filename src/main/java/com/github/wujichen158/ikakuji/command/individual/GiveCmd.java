@@ -1,4 +1,4 @@
-package com.github.wujichen158.ikakuji.command;
+package com.github.wujichen158.ikakuji.command.individual;
 
 import com.envyful.api.command.annotate.Command;
 import com.envyful.api.command.annotate.executor.Argument;

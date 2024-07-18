@@ -47,6 +47,41 @@ public class CfgPostProcessUtil {
         }
     }
 
+    public static void loadAllGlobalData() {
+        GlobalKujiFactory.clear();
+
+        try (Stream<Path> paths = Files.walk(Paths.get(Reference.GLOBAL_DATA_PATH))) {
+            paths.filter(Files::isRegularFile)
+                    .filter(path -> path.toString().endsWith(Reference.YAML_SUFFIX))
+                    .forEach(path -> {
+                        YamlConfigurationLoader loader = YamlConfigurationLoader.builder()
+                                .path(path)
+                                .build();
+                        try {
+                            ConfigurationNode node = loader.load();
+                            Optional.ofNullable(node.get(KujiObj.GlobalData.class)).ifPresent(globalData -> {
+                                String globalKujiName = path.getFileName().toString().replace(Reference.YAML_SUFFIX, "");
+                                // Only add to cache if it's not ended.
+                                if (!TimeUtil.isEndTimePassed(globalData.getEndTime())) {
+                                    // Calculate time to date to ensure fast processing
+                                    globalData.calDates();
+                                    // Calculate current drawn count
+                                    globalData.setDrawnCount((int) globalData.getData().stream()
+                                            .filter(KujiObj.GlobalDataEntry::isSettled)
+                                            .count());
+                                    GlobalKujiFactory.register(globalKujiName, globalData);
+                                }
+                                GlobalKujiFactory.markExisted(globalKujiName);
+                            });
+                        } catch (ConfigurateException ignored) {
+                            IkaKuji.LOGGER.warn("Global Kuji " + path + " has something wrong, please have a check");
+                        }
+                    });
+        } catch (IOException ignored) {
+            IkaKuji.LOGGER.warn("Reading dir: " + Reference.GLOBAL_DATA_PATH + " failed, please have a check");
+        }
+    }
+
     /**
      * Find if there're any abnormal data in player kujis when all crates are reloaded
      */
@@ -81,7 +116,7 @@ public class CfgPostProcessUtil {
                         }
                     });
         } catch (IOException ignored) {
-            IkaKuji.LOGGER.warn("Reading dir: " + Reference.CRATE_PATH + " failed, please have a check");
+            IkaKuji.LOGGER.warn("Reading dir: " + Reference.DATA_PATH + " failed, please have a check");
         }
     }
 }
