@@ -1,65 +1,35 @@
-buildscript {
-    repositories {
-        maven { url = "https://jitpack.io" }
-        maven { url = 'https://maven.aliyun.com/nexus/content/groups/public/' }
-        maven { url = 'https://maven.aliyun.com/nexus/content/repositories/jcenter'}
-        maven { url = 'https://plugins.gradle.org/m2/' }
-        maven { url = 'https://files.minecraftforge.net/maven' }
-        maven { url = 'https://maven.minecraftforge.net/' }
-        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-        maven { url 'https://repo.lucko.me/' }
-        maven { url "https://repo.aikar.co/content/groups/aikar/" }
-        maven { url "https://maven.envyware.co.uk/releases"}
-        maven { url = 'https://repo.spongepowered.org/maven'}
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-		classpath "com.github.johnrengelman:shadow:7.1.2"
-    }
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
-allprojects {
-    repositories {
-        maven { url = "https://jitpack.io" }
-        maven { url = 'https://maven.aliyun.com/nexus/content/groups/public/' }
-        maven { url = 'https://maven.aliyun.com/nexus/content/repositories/jcenter'}
-        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-        maven { url 'https://repo.lucko.me/' }
-        maven { url "https://repo.aikar.co/content/groups/aikar/" }
-        maven { url "https://maven.envyware.co.uk/releases"}
-        maven { url = 'https://repo.spongepowered.org/maven'}
-        ivy {
-            setUrl('https://download.nodecdn.net/containers/reforged/server/release')
-            metadataSources {
-                artifact()
-            }
-            patternLayout {
-                artifact('[revision]/[artifact].[ext]')
-            }
-        }
-    }
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
 }
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(11)
+
+println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+minecraft {
+    mappings channel: mapping_channel, version: mapping_version
+    
+    copyIdeResources = true
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
     mavenCentral()
-    maven { url = 'https://maven.aliyun.com/nexus/content/groups/public/' }
-    maven { url = 'https://maven.aliyun.com/nexus/content/repositories/jcenter'}
-    maven { url = "https://oss.sonatype.org/content/repositories/snapshots" }
-    maven { url = "https://repo.lucko.me/" }
-    maven { url = "https://repo.aikar.co/content/groups/aikar/" }
     maven { url = "https://jitpack.io" }
+    maven { url = "https://repo.aikar.co/content/groups/aikar/" }
     maven { url = "https://repo.spongepowered.org/maven" }
     maven { url = "https://maven.envyware.co.uk/releases" }
-    ivy {
-        setUrl('https://download.nodecdn.net/containers/reforged/server/release')
-        metadataSources {
-            artifact()
-        }
-        patternLayout {
-            artifact('[revision]/[artifact].[ext]')
-        }
-    }
     maven {
         url 'https://www.cursemaven.com'
         content {
@@ -68,25 +38,12 @@ repositories {
     }
 }
 
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'com.github.johnrengelman.shadow'
-
-version = minecraftVersion + '-' + modVersion
-group = modGroup
-archivesBaseName = modName
-
-java.toolchain.languageVersion = JavaLanguageVersion.of(11)
-
-minecraft {
-    mappings channel: mappingsChannel, version: mappingsVersion
-}
-
 dependencies {
-    minecraft 'net.minecraftforge:forge:' + minecraftVersion + '-' + forgeVersion
-	
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
     shadow group: 'org.spongepowered', name: 'configurate-yaml', version: '4.0.0'
-    shadow (group: 'com.envyful.api', name: 'commons', version: '6.1.2')
-    shadow (group: 'com.envyful.api', name: 'forge16', version: '6.1.2'){
+    shadow (group: 'com.envyful.api', name: 'commons', version: envy_api_version)
+    shadow (group: 'com.envyful.api', name: 'forge16', version: envy_api_version){
         transitive = false
     }
 }
@@ -94,39 +51,69 @@ dependencies {
 shadowJar {
     configurations = [project.configurations.shadow]
     setArchiveClassifier('')
-    setArchiveBaseName("${archivesBaseName}-Forge")
+    setArchiveBaseName("${mod_name}-Forge")
 
-    relocate('org.spongepowered.configurate', "${modGroup}.shade.configurate")
-    relocate('org.yaml.snakeyaml', "${modGroup}.shade.snakeyaml")
-    relocate('io.leangen.geantyref', "${modGroup}.shade.geantyref")
-    relocate('com.google.gson', "${modGroup}.shade.gson")
-    relocate('com.zaxxer', "${modGroup}.shade.hikari")
-    relocate('org.slf4j', "${modGroup}.shade.slf4j")
-    relocate('com.envyful.api', "${modGroup}.shade.envy.api")
-    relocate('org.bstats', "${modGroup}.shade.bstats")
+    relocate('org.spongepowered.configurate', "${mod_group_id}.shade.configurate")
+    relocate('org.yaml.snakeyaml', "${mod_group_id}.shade.snakeyaml")
+    relocate('io.leangen.geantyref', "${mod_group_id}.shade.geantyref")
+    relocate('com.google.gson', "${mod_group_id}.shade.gson")
+    relocate('com.zaxxer', "${mod_group_id}.shade.hikari")
+    relocate('org.slf4j', "${mod_group_id}.shade.slf4j")
+    relocate('com.envyful.api', "${mod_group_id}.shade.envy.api")
+    relocate('org.bstats', "${mod_group_id}.shade.bstats")
 
+    exclude "com/google/**"
+    exclude "javax/**"
     exclude "**/module-info.class"
+    exclude "META-INF/versions/9/**"
+    exclude "META-INF/native-image/**"
+    exclude "META-INF/services/**"
 }
 
-processResources {
-    filesMatching('mcmod.info') {
-        expand(
-            'modId': modId,
-            'modName': modName,
-            'modVersion': modVersion,
-            'minecraftVersion': minecraftVersion
-        )
+tasks.named('processResources', ProcessResources).configure {
+    var replaceProperties = [
+            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
+            forge_version: forge_version, forge_version_range: forge_version_range,
+            loader_version_range: loader_version_range,
+            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+            mod_authors: mod_authors, mod_description: mod_description,
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties + [project: project]
     }
 }
 
-reobf {
-    shadowJar {
-        getClasspath().setFrom(sourceSets.main.compileClasspath)
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+                'Specification-Title'     : mod_id,
+                'Specification-Vendor'    : mod_authors,
+                'Specification-Version'   : '1', // We are version 1 of ourselves
+                'Implementation-Title'    : project.name,
+                'Implementation-Version'  : project.jar.archiveVersion,
+                'Implementation-Vendor'   : mod_authors,
+                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+}
+
+    finalizedBy 'reobfJar'
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            artifact jar
+        }
+    }
+    repositories {
+        maven {
+            url "file://${project.projectDir}/mcmodsrepo"
+        }
     }
 }
 
-jar.finalizedBy('reobfJar')
-
-tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
