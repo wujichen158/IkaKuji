@@ -97,9 +97,8 @@ public class KujiExecutor {
         finalReward.give(player);
 
         boolean isLast = processLastThingsGlobal(player, globalKujiData, crate);
-        GlobalKujiFactory.updateDrawn(globalKujiData, rewardIndex,
-                player.getUniqueId(), player.getName(),
-                finalReward.getId());
+        GlobalKujiFactory.updateDrawn(globalKujiData, player.getUniqueId(), player.getName(),
+                rewardIndex, finalReward.getId(), isLast);
 
         if (IkaKuji.getInstance().getLocale().getLogs().getEnable()) {
             logGlobalRes(player, globalKujiData, finalReward, isLast);
@@ -110,7 +109,7 @@ public class KujiExecutor {
 
     private static boolean processLastThings(ForgeEnvyPlayer player, List<String> playerDrawn, KujiObj.Crate crate) {
         boolean isLast = false;
-        if (isFullDrawn(playerDrawn, crate)) {
+        if (crate.isFullDrawn(playerDrawn)) {
             isLast = true;
             deliverLast(player, crate);
         }
@@ -121,7 +120,7 @@ public class KujiExecutor {
     private static boolean processLastThingsGlobal(ForgeEnvyPlayer player,
                                                    KujiObj.GlobalData globalKujiData, KujiObj.Crate crate) {
         boolean isLast = false;
-        if (isGlobalFullDrawn(globalKujiData)) {
+        if (globalKujiData.isFullDrawn()) {
             isLast = true;
             deliverLast(player, crate);
         }
@@ -240,33 +239,6 @@ public class KujiExecutor {
     }
 
     /**
-     * Check whether the player has drawn all rewards in specified crate
-     * <p>
-     * Though we can just judge the size of the 2 list,
-     * but this entire checking is more reliable
-     * </p>
-     *
-     * @param playerDrawn
-     * @param crate
-     * @return
-     */
-    public static boolean isFullDrawn(List<String> playerDrawn, KujiObj.Crate crate) {
-        Map<String, Integer> playerDrawnMap = playerDrawn.stream().collect(Collectors.toMap(key -> key, value -> 1, Integer::sum));
-        Map<String, Integer> rewardMap = crate.getRewardAmountMapLazy();
-        return playerDrawnMap.equals(rewardMap);
-    }
-
-    /**
-     * Check whether the specified global kuji has been fully drawn
-     *
-     * @param globalKujiData
-     * @return
-     */
-    public static boolean isGlobalFullDrawn(KujiObj.GlobalData globalKujiData) {
-        return globalKujiData.getDrawnCount() == globalKujiData.getData().size();
-    }
-
-    /**
      * Calculate intersect of player drawn list and corresponding crate.
      * This is able to retain the min number of duplicate elements,
      * and will try its best to keep the order of the player drawn list
@@ -304,7 +276,7 @@ public class KujiExecutor {
         return addLore(reward, loreLines);
     }
 
-    public static ItemStack addWinnerLore(KujiObj.Reward reward, String winnerName, String formattedWinTime) {
+    public static ItemStack addWinnerLore(KujiObj.Reward reward, String winnerName, String formattedWinTime, boolean isLast) {
         IkaKujiLocaleCfg.Messages messages = IkaKuji.getInstance().getLocale().getMessages();
 
         List<ITextComponent> loreLines = Lists.newArrayList(
@@ -312,6 +284,10 @@ public class KujiExecutor {
                 MsgUtil.colorMsg(messages.getWinnerName(), winnerName),
                 MsgUtil.colorMsg(messages.getWinTime(), formattedWinTime)
         );
+
+        if (isLast) {
+            loreLines.add(MsgUtil.colorMsg(messages.getWinWithLastShot()));
+        }
 
         return addLore(reward, loreLines);
     }
@@ -397,7 +373,7 @@ public class KujiExecutor {
             for (String preCrateName : preCrates) {
                 Optional.ofNullable(playerKujiData.get(preCrateName)).ifPresent(preCratePlayerDrawn -> {
                     Optional.ofNullable(CrateFactory.get(preCrateName)).ifPresent(preCrate -> {
-                        if (!isFullDrawn(preCratePlayerDrawn, preCrate)) {
+                        if (!crate.isFullDrawn(preCratePlayerDrawn)) {
                             incompleteCrates.add(preCrateName);
                         }
                     });
@@ -410,7 +386,7 @@ public class KujiExecutor {
         }
 
         // Check full
-        if (KujiExecutor.isFullDrawn(playerDrawn, crate)) {
+        if (crate.isFullDrawn(playerDrawn)) {
             if (crate.isOneRound()) {
                 player.sendMessage(MsgUtil.prefixedColorMsg(messages.getOneRoundMsg()), player.getUUID());
                 return false;

@@ -69,6 +69,7 @@ public class CfgPostProcessUtil {
                                     globalData.setDrawnCount((int) globalData.getData().stream()
                                             .filter(KujiObj.GlobalDataEntry::isSettled)
                                             .count());
+                                    // The last shot index is been persisted, don't need to recalculate here
                                     GlobalKujiFactory.register(globalKujiName, globalData);
                                 }
                                 GlobalKujiFactory.markExisted(globalKujiName);

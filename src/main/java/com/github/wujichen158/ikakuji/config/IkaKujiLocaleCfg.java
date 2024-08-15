@@ -49,6 +49,7 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
         private String probPerReward = "&6probability per reward is about: %.2f%%";
         private String winnerName = "&6Winner: &e%s";
         private String winTime = "&6Won at &e%s";
+        private String winWithLastShot = "&5With last shot";
 
         public String getPrefix() {
             return prefix;
@@ -124,6 +125,10 @@ public class IkaKujiLocaleCfg extends AbstractYamlConfig {
 
         public String getWinTime() {
             return winTime;
+        }
+
+        public String getWinWithLastShot() {
+            return winWithLastShot;
         }
     }
 

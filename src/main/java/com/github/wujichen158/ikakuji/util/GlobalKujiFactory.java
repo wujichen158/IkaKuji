@@ -128,10 +128,15 @@ public class GlobalKujiFactory {
         return EXISTED_GLOBAL_KUJIS.contains(globalKujiName);
     }
 
-    public static void updateDrawn(KujiObj.GlobalData globalData, int rewardIndex, UUID playerUuid, String playerName, String rewardId) {
+    public static void updateDrawn(KujiObj.GlobalData globalData, UUID playerUuid, String playerName,
+                                   int rewardIndex, String rewardId, boolean isLast) {
         // Win time needs to be more precise, so use another format
         globalData.updateData(rewardIndex, playerUuid, playerName, rewardId, TimeUtil.formatDateTime(LocalDateTime.now()));
         globalData.addDrawnCount();
+        // Write last shot index updating here to avoid extra file update
+        if (isLast) {
+            globalData.setLastShotIndex(rewardIndex);
+        }
         updateGlobalDataFile(getName(globalData), globalData);
     }
 

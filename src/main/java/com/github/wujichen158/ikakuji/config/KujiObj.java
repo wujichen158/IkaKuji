@@ -115,6 +115,21 @@ public class KujiObj {
             return rewardTotal;
         }
 
+        /**
+         * Check whether the player has drawn all rewards in specified crate
+         * <p>
+         * Though we can just judge the size of the 2 list,
+         * but this entire checking is more reliable
+         * </p>
+         *
+         * @param playerDrawn
+         * @return
+         */
+        public boolean isFullDrawn(List<String> playerDrawn) {
+            return playerDrawn.stream().collect(Collectors.toMap(key -> key, value -> 1, Integer::sum))
+                    .equals(getRewardAmountMapLazy());
+        }
+
         public boolean isJumpAnimation() {
             return jumpAnimation;
         }
@@ -310,7 +325,7 @@ public class KujiObj {
             List<String> availableCrates = Lists.newArrayList();
             kujiData.forEach((crateName, drawnList) -> {
                 Optional.ofNullable(CrateFactory.get(crateName)).ifPresent(crate -> {
-                    if (!KujiExecutor.isFullDrawn(drawnList, crate)) {
+                    if (!crate.isFullDrawn(drawnList)) {
                         availableCrates.add(crateName);
                     }
                 });
@@ -325,6 +340,7 @@ public class KujiObj {
         private EnumGlobalRewardRule rewardRule;
         private String startTime = "";
         private String endTime = "";
+        private int lastShotIndex = -1;
         private transient LocalDateTime startDateTime;
         private transient LocalDateTime endDateTime;
         private transient int drawnCount;
@@ -358,6 +374,10 @@ public class KujiObj {
             return endTime;
         }
 
+        public int getLastShotIndex() {
+            return lastShotIndex;
+        }
+
         public LocalDateTime getStartDateTime() {
             return startDateTime;
         }
@@ -374,6 +394,10 @@ public class KujiObj {
             this.endTime = endTime;
         }
 
+        public void setLastShotIndex(int lastShotIndex) {
+            this.lastShotIndex = lastShotIndex;
+        }
+
         public void setData(List<KujiObj.GlobalDataEntry> data) {
             this.data = data;
         }
@@ -388,6 +412,16 @@ public class KujiObj {
 
         public void setDrawnCount(int drawnCount) {
             this.drawnCount = drawnCount;
+        }
+
+        /**
+         * Check whether this global kuji has been fully drawn.
+         * Calculate in a more simple way than individual kuji.
+         *
+         * @return
+         */
+        public boolean isFullDrawn() {
+            return this.drawnCount == this.data.size();
         }
 
         public void calDates() {

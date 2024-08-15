@@ -38,7 +38,7 @@ public class GlobalGuiHandlerFactory {
                     KujiObj.GlobalDataEntry globalDataEntry = data.get(i);
                     if (globalDataEntry.isSettled()) {
                         int slot = displaySlots.get(slotIndex);
-                        setWonSlot(pane, crate, globalDataEntry, slot);
+                        setWonSlot(pane, crate, globalDataEntry, slot, i == globalKujiData.getLastShotIndex());
                     }
                     slotIndex++;
                 }
@@ -62,7 +62,7 @@ public class GlobalGuiHandlerFactory {
                 int slot = displaySlots.get(slotIndex);
                 KujiObj.GlobalDataEntry globalDataEntry = data.get(i);
                 if (globalDataEntry.isSettled()) {
-                    setWonSlot(pane, crate, globalDataEntry, slot);
+                    setWonSlot(pane, crate, globalDataEntry, slot, i == globalKujiData.getLastShotIndex());
                 } else {
                     int posX = slot % 9, posY = slot / 9;
                     int rewardIndex = i;
@@ -116,19 +116,17 @@ public class GlobalGuiHandlerFactory {
                                KujiObj.GlobalDataEntry globalDataEntry, ForgeEnvyPlayer player,
                                KujiObj.Reward reward, int rewardIndex, int posX, int posY) {
             // Post process, including reward delivering and last shot judgement
-            KujiExecutor.globalPostProcess(player, reward, globalKujiData, crate, rewardIndex);
-
-            //TODO: Support showing last shot
-
+            boolean isLast = KujiExecutor.globalPostProcess(player, reward, globalKujiData, crate, rewardIndex);
             ItemStack itemStack = KujiExecutor.addWinnerLore(reward,
-                    globalDataEntry.getPlayerName(), globalDataEntry.getWinTime());
+                    globalDataEntry.getPlayerName(), globalDataEntry.getWinTime(), isLast);
             pane.set(posX, posY, GuiFactory.displayable(itemStack));
         }
 
-        private void setWonSlot(Pane pane, KujiObj.Crate crate, KujiObj.GlobalDataEntry globalDataEntry, int slot) {
+        private void setWonSlot(Pane pane, KujiObj.Crate crate, KujiObj.GlobalDataEntry globalDataEntry,
+                                int slot, boolean isLast) {
             KujiObj.Reward reward = crate.getRewardMapLazy().get(globalDataEntry.getRewardId());
             ItemStack rewardItem = KujiExecutor.addWinnerLore(reward,
-                    globalDataEntry.getPlayerName(), globalDataEntry.getWinTime());
+                    globalDataEntry.getPlayerName(), globalDataEntry.getWinTime(), isLast);
             pane.set(slot % 9, slot / 9, GuiFactory.displayable(rewardItem));
         }
     }
