@@ -24,6 +24,7 @@ import net.minecraft.util.Util;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,14 +58,19 @@ public class HoldCmd {
         }
 
         // Judge time
-        LocalDateTime startDateTime = TimeUtil.parseTimeString(startTime);
-        if (startTime == null) {
-            sender.sendMessage(MsgUtil.prefixedColorMsg(commands.getTimeFormatError()), Util.NIL_UUID);
-            return;
+        LocalDateTime startDateTime;
+        if (Reference.CURRENT_TIME_SYMBOLS.contains(startTime.toLowerCase(Locale.ROOT))) {
+            startDateTime = LocalDateTime.now();
+        } else {
+            startDateTime = TimeUtil.parseTimeString(startTime);
+            if (startDateTime == null) {
+                sender.sendMessage(MsgUtil.prefixedColorMsg(commands.getTimeFormatError()), Util.NIL_UUID);
+                return;
+            }
         }
 
         LocalDateTime endDateTime = null;
-        if (!Reference.INF_TIME_SYMBOL.equals(endTime)) {
+        if (!Reference.INF_TIME_SYMBOLS.contains(endTime.toLowerCase(Locale.ROOT))) {
             endDateTime = TimeUtil.parseTimeString(endTime);
             if (endDateTime == null) {
                 sender.sendMessage(MsgUtil.prefixedColorMsg(commands.getTimeFormatError()), Util.NIL_UUID);

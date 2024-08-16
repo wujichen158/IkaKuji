@@ -1,6 +1,9 @@
 package com.github.wujichen158.ikakuji.lib;
 
+import com.google.common.collect.Sets;
+
 import java.util.Random;
+import java.util.Set;
 
 public class Reference {
     public static final String MOD_ID = "ikakuji";
@@ -20,6 +23,7 @@ public class Reference {
 
     public static final String LOG_PATH = "logs/ikakuji.log";
 
-    public static final String INF_TIME_SYMBOL = "0";
+    public static final Set<String> CURRENT_TIME_SYMBOLS = Sets.newHashSet("0", "now");
+    public static final Set<String> INF_TIME_SYMBOLS = Sets.newHashSet("0", "no", "never");
 
 }
