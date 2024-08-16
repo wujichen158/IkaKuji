@@ -9,7 +9,6 @@ import com.envyful.api.forge.player.ForgePlayerManager;
 import com.envyful.api.gui.factory.GuiFactory;
 import com.github.wujichen158.ikakuji.command.IkaKujiCmd;
 import com.github.wujichen158.ikakuji.command.completion.*;
-import com.github.wujichen158.ikakuji.config.IkaKujiCfg;
 import com.github.wujichen158.ikakuji.config.IkaKujiLocaleCfg;
 import com.github.wujichen158.ikakuji.lib.Reference;
 import com.github.wujichen158.ikakuji.listener.KujiTriggerListener;
@@ -40,7 +39,7 @@ public class IkaKuji {
 
     private final ForgePlayerManager playerManager = new ForgePlayerManager();
     private final ForgeCommandFactory commandFactory = new ForgeCommandFactory(ForgeAnnotationCommandParser::new, this.playerManager);
-//    private IkaKujiCfg config;
+    //    private IkaKujiCfg config;
     private IkaKujiLocaleCfg locale;
 
     public IkaKuji() {
@@ -72,17 +71,18 @@ public class IkaKuji {
 
     private void createDirsIfNotExist() {
         try {
-            Path teamPath = Paths.get(Reference.CRATE_PATH);
-            if (Files.notExists(teamPath)) {
-                Files.createDirectories(teamPath);
-            }
-
-            Path dataPath = Paths.get(Reference.DATA_PATH);
-            if (Files.notExists(dataPath)) {
-                Files.createDirectories(dataPath);
-            }
+            createDirIfNotExist(Reference.CRATE_PATH);
+            createDirIfNotExist(Reference.DATA_PATH);
+            createDirIfNotExist(Reference.GLOBAL_DATA_PATH);
         } catch (IOException e) {
             LOGGER.error(e.toString());
+        }
+    }
+
+    private void createDirIfNotExist(String strPath) throws IOException {
+        Path path = Paths.get(strPath);
+        if (Files.notExists(path)) {
+            Files.createDirectories(path);
         }
     }
 
