@@ -8,6 +8,7 @@ import com.github.wujichen158.ikakuji.IkaKuji;
 import com.github.wujichen158.ikakuji.config.KujiObj;
 import com.github.wujichen158.ikakuji.kuji.EnumGlobalRewardRule;
 import com.github.wujichen158.ikakuji.kuji.KujiExecutor;
+import com.github.wujichen158.ikakuji.kuji.KujiGuiManager;
 import com.github.wujichen158.ikakuji.kuji.gui.IGlobalGuiHandler;
 import com.github.wujichen158.ikakuji.util.MsgUtil;
 import net.minecraft.entity.player.PlayerEntity;
@@ -25,8 +26,8 @@ public class GlobalGuiHandlerFactory {
         public Consumer<Pane> handle(int page, KujiObj.GlobalData globalKujiData, KujiObj.Crate crate, ForgeEnvyPlayer player) {
             return pane -> {
                 List<Integer> displaySlots = crate.getDisplaySlots();
-                int offset = (page - 1) * displaySlots.size();
                 int pageSize = displaySlots.size();
+                int offset = (page - 1) * pageSize;
 
 
                 // Only traverse specified range to improve efficiency
@@ -49,8 +50,8 @@ public class GlobalGuiHandlerFactory {
         public void initDisplaySlots(Pane pane, int page, KujiObj.GlobalData globalKujiData, KujiObj.Crate crate, ForgeEnvyPlayer player) {
             ItemStack coverItem = Optional.ofNullable(crate.getCoverItem()).map(UtilConfigItem::fromConfigItem).orElse(ItemStack.EMPTY);
             List<Integer> displaySlots = crate.getDisplaySlots();
-            int offset = (page - 1) * displaySlots.size();
             int pageSize = displaySlots.size();
+            int offset = (page - 1) * pageSize;
 
 
             // Only traverse specified range to improve efficiency
@@ -80,6 +81,24 @@ public class GlobalGuiHandlerFactory {
                 pane.set(slot % 9, slot / 9, GuiFactory.displayable(ItemStack.EMPTY));
                 slotIndex++;
             }
+
+            // Next page button. `pageSize * page` equals to `offset + pageSize`
+            if (offset + pageSize < globalKujiData.getData().size()) {
+                UtilConfigItem.builder()
+                        .clickHandler((envyPlayer, clickType) ->
+                                KujiGuiManager.openGlobal(page + 1, globalKujiData, crate, player))
+                        .extendedConfigItem(player, pane, crate.getPreviewNextPage());
+            }
+
+            // Previous page button
+            if (page > 1) {
+                UtilConfigItem.builder()
+                        .clickHandler((envyPlayer, clickType) ->
+                                KujiGuiManager.openGlobal(page - 1, globalKujiData, crate, player))
+                        .extendedConfigItem(player, pane, crate.getPreviewPreviousPage());
+            }
+
+            // Don't draw placeholders here. Draw in global preview page
         }
 
         private void handleClick(Pane pane, KujiObj.GlobalData globalKujiData, KujiObj.Crate crate,
