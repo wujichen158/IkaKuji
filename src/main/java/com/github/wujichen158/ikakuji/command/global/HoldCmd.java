@@ -65,7 +65,7 @@ public class HoldCmd {
 
         LocalDateTime endDateTime = null;
         if (!Reference.INF_TIME_SYMBOL.equals(endTime)) {
-            endDateTime = TimeUtil.parseTimeString(args[0]);
+            endDateTime = TimeUtil.parseTimeString(endTime);
             if (endDateTime == null) {
                 sender.sendMessage(MsgUtil.prefixedColorMsg(commands.getTimeFormatError()), Util.NIL_UUID);
                 return;
