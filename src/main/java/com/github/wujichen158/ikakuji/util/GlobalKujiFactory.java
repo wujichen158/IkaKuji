@@ -163,7 +163,7 @@ public class GlobalKujiFactory {
     public static void createGlobalKujiFile(String globalKujiName, KujiObj.GlobalData globalKujiData) {
         UtilConcurrency.runAsync(() -> {
             String globalKujiFileName = globalKujiName + Reference.YAML_SUFFIX;
-            Path playerFile = Paths.get(Reference.DATA_PATH).resolve(globalKujiFileName);
+            Path playerFile = Paths.get(Reference.GLOBAL_DATA_PATH).resolve(globalKujiFileName);
             YamlConfigurationLoader loader = YamlConfigurationLoader.builder()
                     .path(playerFile)
                     .build();
