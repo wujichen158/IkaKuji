@@ -18,7 +18,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(11)
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 minecraft {
     mappings channel: mapping_channel, version: mapping_version
-    
+
     copyIdeResources = true
 }
 
@@ -42,8 +42,8 @@ dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
     shadow group: 'org.spongepowered', name: 'configurate-yaml', version: '4.0.0'
-    shadow (group: 'com.envyful.api', name: 'commons', version: envy_api_version)
-    shadow (group: 'com.envyful.api', name: 'forge16', version: envy_api_version){
+    shadow(group: 'com.envyful.api', name: 'commons', version: envy_api_version)
+    shadow(group: 'com.envyful.api', name: 'forge16', version: envy_api_version) {
         transitive = false
     }
 }
@@ -56,15 +56,22 @@ shadowJar {
     relocate('org.spongepowered.configurate', "${mod_group_id}.shade.configurate")
     relocate('org.yaml.snakeyaml', "${mod_group_id}.shade.snakeyaml")
     relocate('io.leangen.geantyref', "${mod_group_id}.shade.geantyref")
-    relocate('com.google.gson', "${mod_group_id}.shade.gson")
     relocate('com.zaxxer', "${mod_group_id}.shade.hikari")
     relocate('org.slf4j', "${mod_group_id}.shade.slf4j")
+//    relocate('org.apache', "${mod_group_id}.shade.apache")
     relocate('com.envyful.api', "${mod_group_id}.shade.envy.api")
     relocate('org.bstats', "${mod_group_id}.shade.bstats")
+    relocate('io.netty', "${mod_group_id}.shade.netty")
+    relocate('io.lettuce', "${mod_group_id}.shade.lettuce")
+    relocate('com.sun.el', "${mod_group_id}.shade.sun.el")
+    relocate('org.reactivestreams', "${mod_group_id}.shade.reactivestreams")
+    relocate('reactor', "${mod_group_id}.shade.reactor")
 
     exclude "com/google/**"
     exclude "javax/**"
     exclude "**/module-info.class"
+    exclude "**/*.properties"
+    exclude "**/*.xml"
     exclude "META-INF/versions/9/**"
     exclude "META-INF/native-image/**"
     exclude "META-INF/services/**"
@@ -72,11 +79,11 @@ shadowJar {
 
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
-            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
-            forge_version: forge_version, forge_version_range: forge_version_range,
+            minecraft_version   : minecraft_version, minecraft_version_range: minecraft_version_range,
+            forge_version       : forge_version, forge_version_range: forge_version_range,
             loader_version_range: loader_version_range,
-            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
-            mod_authors: mod_authors, mod_description: mod_description,
+            mod_id              : mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+            mod_authors         : mod_authors, mod_description: mod_description,
     ]
     inputs.properties replaceProperties
 
@@ -85,33 +92,25 @@ tasks.named('processResources', ProcessResources).configure {
     }
 }
 
-tasks.named('jar', Jar).configure {
-    manifest {
-        attributes([
-                'Specification-Title'     : mod_id,
-                'Specification-Vendor'    : mod_authors,
-                'Specification-Version'   : '1', // We are version 1 of ourselves
-                'Implementation-Title'    : project.name,
-                'Implementation-Version'  : project.jar.archiveVersion,
-                'Implementation-Vendor'   : mod_authors,
-                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
-        ])
+jar {
+    setArchiveBaseName("${mod_name}-Forge")
 }
 
-    finalizedBy 'reobfJar'
+tasks.register('versionedRelease', Copy) {
+    dependsOn('shadowJar')
+    delete fileTree('release/') {
+        include '**/*.jar'
+    }
+    group "build"
+    from("./build/libs/${mod_name}-Forge-${mod_version}.jar")
+    into('release/')
+    include '*.jar'
 }
 
-publishing {
-    publications {
-        register('mavenJava', MavenPublication) {
-            artifact jar
-        }
-    }
-    repositories {
-        maven {
-            url "file://${project.projectDir}/mcmodsrepo"
-        }
-    }
+jar.finalizedBy('shadowJar')
+shadowJar.finalizedBy('reobfJar')
+tasks.named('build') {
+    finalizedBy('versionedRelease')
 }
 
 tasks.withType(JavaCompile).configureEach {
