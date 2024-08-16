@@ -89,6 +89,7 @@ public class IkaKuji {
     @SubscribeEvent
     public void preInit(final FMLServerAboutToStartEvent event) {
         GuiFactory.setPlatformFactory(new ForgeGuiFactory());
+        GuiFactory.setPlayerManager(this.playerManager);
 
         loadConfig();
 
