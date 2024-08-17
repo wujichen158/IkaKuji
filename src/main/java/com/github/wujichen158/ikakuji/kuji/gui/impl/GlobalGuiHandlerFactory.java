@@ -43,6 +43,17 @@ public class GlobalGuiHandlerFactory {
                     }
                     slotIndex++;
                 }
+
+                // Placeholder needs to be shown and updated here,
+                // since we need an explicit page number
+                Optional.ofNullable(crate.getPlaceholderButton()).ifPresent(placeholderItem -> {
+                    int rewardDrawn = globalKujiData.getDrawnCount();
+                    int rewardTotal = crate.getRewardTotalLazy();
+
+                    UtilConfigItem.builder()
+                            .extendedConfigItem(player, pane, placeholderItem,
+                                    KujiExecutor.genAmountPlaceholder(rewardDrawn, rewardTotal, page));
+                });
             };
         }
 
@@ -97,8 +108,6 @@ public class GlobalGuiHandlerFactory {
                                 KujiGuiManager.openGlobal(page - 1, globalKujiData, crate, player))
                         .extendedConfigItem(player, pane, crate.getPreviewPreviousPage());
             }
-
-            // Don't draw placeholders here. Draw in global preview page
         }
 
         private void handleClick(Pane pane, KujiObj.GlobalData globalKujiData, KujiObj.Crate crate,
