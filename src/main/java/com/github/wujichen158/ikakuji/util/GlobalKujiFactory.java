@@ -1,8 +1,6 @@
 package com.github.wujichen158.ikakuji.util;
 
 import com.envyful.api.concurrency.UtilConcurrency;
-import com.envyful.api.forge.player.ForgeEnvyPlayer;
-import com.envyful.api.player.EnvyPlayer;
 import com.github.wujichen158.ikakuji.IkaKuji;
 import com.github.wujichen158.ikakuji.config.KujiObj;
 import com.github.wujichen158.ikakuji.lib.Reference;
@@ -66,7 +64,7 @@ public class GlobalKujiFactory {
             String globalKujiName = iterator.next();
             if (hasGlobalKuji(globalKujiName)) {
                 if (Optional.ofNullable(LOADED_GLOBAL_KUJI.get(globalKujiName).getEndDateTime())
-                        .map(dateTime -> dateTime.isBefore(now)).orElse(false)) {
+                        .map(endDateTime -> endDateTime.isBefore(now)).orElse(false)) {
                     iterator.remove();
                     unregister(globalKujiName);
                 }
@@ -131,7 +129,7 @@ public class GlobalKujiFactory {
     public static void updateDrawn(KujiObj.GlobalData globalData, UUID playerUuid, String playerName,
                                    int rewardIndex, String rewardId, boolean isLast) {
         // Win time needs to be more precise, so use another format
-        globalData.updateData(rewardIndex, playerUuid, playerName, rewardId, TimeUtil.formatDateTime(LocalDateTime.now()));
+        globalData.updateData(rewardIndex, playerUuid, playerName, rewardId, TimeUtil.formalDateTime(LocalDateTime.now()));
         globalData.addDrawnCount();
         // Write last shot index updating here to avoid extra file update
         if (isLast) {

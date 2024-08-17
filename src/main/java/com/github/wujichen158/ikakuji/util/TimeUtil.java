@@ -31,8 +31,8 @@ public class TimeUtil {
      */
     public static boolean isEndTimePassed(String endTime) {
         return !endTime.isBlank() && Optional.ofNullable(parseTimeString(endTime))
-                .map(endTimeDate -> endTimeDate.isBefore(LocalDateTime.now()))
-                .orElse(true);
+                .map(endDateTime -> endDateTime.isBefore(LocalDateTime.now()))
+                .orElse(false);
     }
 
     /**
@@ -51,7 +51,7 @@ public class TimeUtil {
      * @param localDateTime
      * @return
      */
-    public static String formatDateTime(LocalDateTime localDateTime) {
+    public static String formalDateTime(LocalDateTime localDateTime) {
         return localDateTime.format(FORMATTER);
     }
 }

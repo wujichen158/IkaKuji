@@ -61,6 +61,7 @@ public class HoldCmd {
         LocalDateTime startDateTime;
         if (Reference.CURRENT_TIME_SYMBOLS.contains(startTime.toLowerCase(Locale.ROOT))) {
             startDateTime = LocalDateTime.now();
+            startTime = TimeUtil.parseDateTime(startDateTime);
         } else {
             startDateTime = TimeUtil.parseTimeString(startTime);
             if (startDateTime == null) {
@@ -70,7 +71,9 @@ public class HoldCmd {
         }
 
         LocalDateTime endDateTime = null;
-        if (!Reference.INF_TIME_SYMBOLS.contains(endTime.toLowerCase(Locale.ROOT))) {
+        if (Reference.INF_TIME_SYMBOLS.contains(endTime.toLowerCase(Locale.ROOT))) {
+            endTime = "0";
+        } else {
             endDateTime = TimeUtil.parseTimeString(endTime);
             if (endDateTime == null) {
                 sender.sendMessage(MsgUtil.prefixedColorMsg(commands.getTimeFormatError()), Util.NIL_UUID);
