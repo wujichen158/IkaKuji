@@ -4,7 +4,10 @@ import com.envyful.api.concurrency.UtilConcurrency;
 import com.github.wujichen158.ikakuji.IkaKuji;
 import com.github.wujichen158.ikakuji.config.KujiObj;
 import com.github.wujichen158.ikakuji.lib.Reference;
-import com.google.common.collect.*;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.ChatType;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
@@ -77,7 +80,9 @@ public class GlobalKujiFactory {
         LOADED_GLOBAL_KUJI.forEach((globalKujiName, globalKujiData) -> {
             if (!ON_GOING_GLOBAL_KUJIS.contains(globalKujiName)) {
                 if (globalKujiData.getStartDateTime().isBefore(now)
-                        && globalKujiData.getEndDateTime().isAfter(now)) {
+                        && Optional.ofNullable(globalKujiData.getEndDateTime())
+                        .map(endDateTime -> endDateTime.isAfter(now))
+                        .orElse(true)) {
                     start(globalKujiName);
                 }
             }
