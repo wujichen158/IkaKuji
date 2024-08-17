@@ -46,7 +46,7 @@ public interface IGuiTickHandler {
                         UtilConfigItem.builder().extendedConfigItem(pane, UtilConfigItem.fromConfigItem(indicator), indicator))
         );
 
-        // Draw init display slots
+        // Draw init display slots. rewardItem for kuji pattern
         initDisplaySlots(pane, crate, rewards, rewardItem);
     }
 
