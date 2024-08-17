@@ -91,8 +91,8 @@ public class HoldCmd {
             globalRewardRule = EnumGlobalRewardRule.common;
         }
 
-        KujiObj.GlobalData globalData = new KujiObj.GlobalData(crateName, globalRewardRule, startTime, endTime);
-        prepareGlobalKujiData(globalData, startDateTime, endDateTime, crate);
+        KujiObj.GlobalData globalData = prepareGlobalKujiData(crateName, globalRewardRule,
+                startTime, endTime, startDateTime, endDateTime, crate);
 
         GlobalKujiFactory.create(globalKujiName, globalData);
         sender.sendMessage(MsgUtil.prefixedColorMsg(commands.getGlobalKujiCreated(), globalKujiName), Util.NIL_UUID);
@@ -104,7 +104,24 @@ public class HoldCmd {
 
     }
 
-    private static void prepareGlobalKujiData(KujiObj.GlobalData globalData, LocalDateTime startDateTime, LocalDateTime endDateTime, KujiObj.Crate crate) {
+    /**
+     * New a globalData and set its transient fields
+     *
+     * @param crateName
+     * @param globalRewardRule
+     * @param startTime
+     * @param endTime
+     * @param startDateTime
+     * @param endDateTime
+     * @param crate
+     * @return
+     */
+    private static KujiObj.GlobalData prepareGlobalKujiData(String crateName, EnumGlobalRewardRule globalRewardRule,
+                                                            String startTime, String endTime,
+                                                            LocalDateTime startDateTime, LocalDateTime endDateTime,
+                                                            KujiObj.Crate crate) {
+        KujiObj.GlobalData globalData = new KujiObj.GlobalData(crateName, globalRewardRule, startTime, endTime);
+
         globalData.setStartDateTime(startDateTime);
         globalData.setEndDateTime(endDateTime);
         List<KujiObj.GlobalDataEntry> globalDataList;
@@ -126,5 +143,7 @@ public class HoldCmd {
                         .collect(Collectors.toList());
         }
         globalData.setData(globalDataList);
+
+        return globalData;
     }
 }
