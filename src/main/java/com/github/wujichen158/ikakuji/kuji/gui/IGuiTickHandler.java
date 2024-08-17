@@ -34,8 +34,9 @@ public interface IGuiTickHandler {
      * @param pane
      * @param crate
      * @param rewards
+     * @param rewardItem
      */
-    default void initGui(Pane pane, KujiObj.Crate crate, List<KujiObj.Reward> rewards) {
+    default void initGui(Pane pane, KujiObj.Crate crate, List<KujiObj.Reward> rewards, ItemStack rewardItem) {
         // Draw bg
         UtilConfigInterface.fillBackground(pane, crate.getDisplayGuiSettings());
 
@@ -46,7 +47,7 @@ public interface IGuiTickHandler {
         );
 
         // Draw init display slots
-        initDisplaySlots(pane, crate, rewards);
+        initDisplaySlots(pane, crate, rewards, rewardItem);
     }
 
     /**
@@ -55,8 +56,9 @@ public interface IGuiTickHandler {
      * @param pane
      * @param crate
      * @param rewards
+     * @param rewardItem
      */
-    void initDisplaySlots(Pane pane, KujiObj.Crate crate, List<KujiObj.Reward> rewards);
+    void initDisplaySlots(Pane pane, KujiObj.Crate crate, List<KujiObj.Reward> rewards, ItemStack rewardItem);
 
 
 }

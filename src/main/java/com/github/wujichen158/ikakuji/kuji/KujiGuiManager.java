@@ -54,7 +54,7 @@ public class KujiGuiManager {
                 .build();
 
         // init kuji GUI
-        tickHandler.initGui(pane, crate, rewards);
+        tickHandler.initGui(pane, crate, rewards, rewardItem);
 
         GuiFactory.guiBuilder()
                 .addPane(pane)

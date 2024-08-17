@@ -72,7 +72,7 @@ public class GuiTickHandlerFactory {
         }
 
         @Override
-        public void initDisplaySlots(Pane pane, KujiObj.Crate crate, List<KujiObj.Reward> rewards) {
+        public void initDisplaySlots(Pane pane, KujiObj.Crate crate, List<KujiObj.Reward> rewards, ItemStack rewardItem) {
             for (Integer spinSlot : crate.getDisplaySlots()) {
                 pane.set(spinSlot % 9, spinSlot / 9, GuiFactory.displayable(
                         UtilConfigItem.fromConfigItem(rewards.get(Reference.RANDOM.nextInt(rewards.size())).getDisplayItem())));
@@ -84,31 +84,13 @@ public class GuiTickHandlerFactory {
         @Override
         public Consumer<Pane> handle(KujiObj.Crate crate, ForgeEnvyPlayer player, List<KujiObj.Reward> rewards, AtomicInteger timer, AtomicBoolean cleared, ItemStack rewardItem) {
             return pane -> {
-                // Only render once is enough
-                if (!cleared.get()) {
-                    List<Integer> displaySlots = crate.getDisplaySlots();
-
-                    int rewardsSize = rewards.size();
-                    ItemStack coverItem = UtilConfigItem.fromConfigItem(crate.getCoverItem());
-
-
-                    int i = 0;
-                    for (int slot : displaySlots) {
-                        ItemStack itemStack = i < rewardsSize ? coverItem : ItemStack.EMPTY;
-                        pane.set(slot % 9, slot / 9, GuiFactory.displayableBuilder(itemStack)
-                                .clickHandler((envyPlayer, clickType) -> {
-                                    setResultPane(pane, rewardItem, coverItem, displaySlots, rewardsSize, slot);
-                                }).build());
-                        i++;
-                    }
-                    cleared.set(true);
-                }
+                // Only render once in init part is enough
             };
         }
 
         private void setResultPane(Pane pane, ItemStack rewardItem, ItemStack coverItem, List<Integer> displaySlots, int rewardsSize, int rewardSlot) {
             int i = 0;
-            //TODO: Check whether this loop is necessary, since it should only change the reward slot
+            // Necessary, since the click handlers of other slot need to be cleared
             for (int slot : displaySlots) {
                 ItemStack itemStack = rewardSlot == slot ? rewardItem : i < rewardsSize ? coverItem : ItemStack.EMPTY;
                 pane.set(slot % 9, slot / 9, GuiFactory.displayable(itemStack));
@@ -117,10 +99,20 @@ public class GuiTickHandlerFactory {
         }
 
         @Override
-        public void initDisplaySlots(Pane pane, KujiObj.Crate crate, List<KujiObj.Reward> rewards) {
-            ItemStack coverItem = Optional.ofNullable(crate.getCoverItem()).map(UtilConfigItem::fromConfigItem).orElse(ItemStack.EMPTY);
-            for (Integer slot : crate.getDisplaySlots()) {
-                pane.set(slot % 9, slot / 9, GuiFactory.displayable(coverItem));
+        public void initDisplaySlots(Pane pane, KujiObj.Crate crate, List<KujiObj.Reward> rewards, ItemStack rewardItem) {
+            List<Integer> displaySlots = crate.getDisplaySlots();
+
+            int rewardsSize = rewards.size();
+            ItemStack coverItem = UtilConfigItem.fromConfigItem(crate.getCoverItem());
+
+            int i = 0;
+            for (int slot : displaySlots) {
+                ItemStack itemStack = i < rewardsSize ? coverItem : ItemStack.EMPTY;
+                pane.set(slot % 9, slot / 9, GuiFactory.displayableBuilder(itemStack)
+                        .clickHandler((envyPlayer, clickType) -> {
+                            setResultPane(pane, rewardItem, coverItem, displaySlots, rewardsSize, slot);
+                        }).build());
+                i++;
             }
         }
 
@@ -197,7 +189,7 @@ public class GuiTickHandlerFactory {
         }
 
         @Override
-        public void initDisplaySlots(Pane pane, KujiObj.Crate crate, List<KujiObj.Reward> rewards) {
+        public void initDisplaySlots(Pane pane, KujiObj.Crate crate, List<KujiObj.Reward> rewards, ItemStack rewardItem) {
             List<Integer> cols = get3Cols(crate.getDisplaySlots());
             for (int col : cols) {
                 for (int i = 0; i < crate.getDisplayGuiSettings().getHeight(); i++) {
