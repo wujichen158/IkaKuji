@@ -46,7 +46,6 @@ public class CrateFactory {
     }
 
     private static void registerWorldPosCrate(KujiCrateType.PositionCrate positionCrate, String crateName) {
-        //TODO: End and Nether's name are NONE
         WORLD_POS_CRATE_MAP.computeIfAbsent(positionCrate.getWorld(), k -> Maps.newHashMap()).put(
                 Triple.of(positionCrate.getX(), positionCrate.getY(), positionCrate.getZ()), crateName);
     }
@@ -98,12 +97,40 @@ public class CrateFactory {
         return LOADED_CRATES.getOrDefault(Optional.ofNullable(ITEM_CRATE_MAP.get(new KujiCrateType.ItemWrapper(itemStack))).map(Pair::getFirst).orElse(null), null);
     }
 
+    /**
+     * 3 kinds of world related patterns would be taken into consideration when judging world:
+     * <p>
+     *     1. world name (gotten by EnvyAPI, might be `NONE`)
+     * </p><p>
+     *     2. dimension name (e.g., overworld, test, the_nether, the_end)
+     * </p><p>
+     *     3. dimension registry name (dim name with prefix such as `minecraft:`)
+     * </p>
+     *
+     * @param world
+     * @param x
+     * @param y
+     * @param z
+     * @return
+     */
     public static KujiObj.Crate tryGetWorldPosCrate(World world, int x, int y, int z) {
-        WORLD_POS_CRATE_MAP.get(UtilWorld.getName(world));
-        return Optional.ofNullable(WORLD_POS_CRATE_MAP.get(UtilWorld.getName(world)))
-                .map(map -> map.get(Triple.of(x, y, z)))
-                .map(LOADED_CRATES::get)
-                .orElse(null);
+        String worldName = UtilWorld.getName(world);
+        if ("NONE".equals(worldName)) {
+            return null;
+        }
+
+        for (String worldPattern : new String[]{
+                worldName,
+                world.dimension().location().getPath(),
+                world.dimension().location().toString()
+        }) {
+            if (WORLD_POS_CRATE_MAP.containsKey(worldPattern)) {
+                return Optional.ofNullable(WORLD_POS_CRATE_MAP.get(worldPattern).get(Triple.of(x, y, z)))
+                        .map(LOADED_CRATES::get)
+                        .orElse(null);
+            }
+        }
+        return null;
     }
 
     public static KujiObj.Crate tryGetEntityCrate(String entityName) {

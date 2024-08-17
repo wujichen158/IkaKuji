@@ -107,7 +107,6 @@ public class CfgPostProcessUtil {
                                 }
 
                                 // Update cache and file
-                                // TODO: May cause async issue when IO in same time. Claim in docs
                                 PlayerKujiFactory.updateIfPresent(
                                         UUID.fromString(path.getFileName().toString().replace(Reference.YAML_SUFFIX, "")),
                                         playerData, loader, node);
