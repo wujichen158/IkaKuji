@@ -25,6 +25,7 @@ public class GlobalGuiHandlerFactory {
         @Override
         public Consumer<Pane> handle(int page, KujiObj.GlobalData globalKujiData, KujiObj.Crate crate, ForgeEnvyPlayer player) {
             return pane -> {
+
                 List<Integer> displaySlots = crate.getDisplaySlots();
                 int pageSize = displaySlots.size();
                 int offset = (page - 1) * pageSize;
@@ -43,17 +44,6 @@ public class GlobalGuiHandlerFactory {
                     }
                     slotIndex++;
                 }
-
-                // Placeholder needs to be shown and updated here,
-                // since we need an explicit page number
-                Optional.ofNullable(crate.getPlaceholderButton()).ifPresent(placeholderItem -> {
-                    int rewardDrawn = globalKujiData.getDrawnCount();
-                    int rewardTotal = crate.getRewardTotalLazy();
-
-                    UtilConfigItem.builder()
-                            .extendedConfigItem(player, pane, placeholderItem,
-                                    KujiExecutor.genAmountPlaceholder(rewardDrawn, rewardTotal, page));
-                });
             };
         }
 
@@ -108,6 +98,17 @@ public class GlobalGuiHandlerFactory {
                                 KujiGuiManager.openGlobal(page - 1, globalKujiData, crate, player))
                         .extendedConfigItem(player, pane, crate.getPreviewPreviousPage());
             }
+
+            // Placeholder needs to be shown here since we need an explicit page number
+            // TODO: Currently doesn't support update rewardDrawn
+            Optional.ofNullable(crate.getPlaceholderButton()).ifPresent(placeholderItem -> {
+                int rewardDrawn = globalKujiData.getDrawnCount();
+                int rewardTotal = crate.getRewardTotalLazy();
+
+                UtilConfigItem.builder()
+                        .extendedConfigItem(player, pane, placeholderItem,
+                                KujiExecutor.genAmountPlaceholder(rewardDrawn, rewardTotal, page));
+            });
         }
 
         private void handleClick(Pane pane, KujiObj.GlobalData globalKujiData, KujiObj.Crate crate,
