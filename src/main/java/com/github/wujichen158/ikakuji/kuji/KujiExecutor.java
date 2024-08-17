@@ -43,11 +43,12 @@ public class KujiExecutor {
         Optional.ofNullable(winSound).ifPresent(sound -> sound.playSound((ServerPlayerEntity) player));
     }
 
-    public static Placeholder[] genAmountPlaceholder(int rewardDrawn, int rewardTotal) {
+    public static Placeholder[] genAmountPlaceholder(int rewardDrawn, int rewardTotal, int page) {
         return new Placeholder[]{
                 Placeholder.simple(Placeholders.REWARD_DRAWN, String.valueOf(rewardDrawn)),
                 Placeholder.simple(Placeholders.REWARD_REMAIN, String.valueOf(rewardTotal - rewardDrawn)),
-                Placeholder.simple(Placeholders.REWARD_TOTAL, String.valueOf(rewardTotal))
+                Placeholder.simple(Placeholders.REWARD_TOTAL, String.valueOf(rewardTotal)),
+                Placeholder.simple(Placeholders.PAGE, String.valueOf(page))
         };
     }
 

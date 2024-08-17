@@ -149,7 +149,8 @@ public class KujiGuiManager {
             int rewardTotal = crate.getRewardTotalLazy();
 
             UtilConfigItem.builder()
-                    .extendedConfigItem(player, pane, placeholderItem, KujiExecutor.genAmountPlaceholder(rewardDrawn, rewardTotal));
+                    .extendedConfigItem(player, pane, placeholderItem,
+                            KujiExecutor.genAmountPlaceholder(rewardDrawn, rewardTotal, page));
         });
 
         GuiFactory.guiBuilder()
@@ -217,7 +218,8 @@ public class KujiGuiManager {
             int rewardTotal = crate.getRewardTotalLazy();
 
             UtilConfigItem.builder()
-                    .extendedConfigItem(player, pane, placeholderItem, KujiExecutor.genAmountPlaceholder(rewardDrawn, rewardTotal));
+                    .extendedConfigItem(player, pane, placeholderItem,
+                            KujiExecutor.genAmountPlaceholder(rewardDrawn, rewardTotal, page));
         });
 
         GuiFactory.guiBuilder()

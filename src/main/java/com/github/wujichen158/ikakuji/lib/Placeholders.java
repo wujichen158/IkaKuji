@@ -12,5 +12,6 @@ public class Placeholders {
     public static final String REWARD_DRAWN = "%reward_drawn%";
     public static final String REWARD_REMAIN = "%reward_remain%";
     public static final String REWARD_TOTAL = "%reward_total%";
+    public static final String PAGE = "%page%";
 
 }
